@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BaHR Stars News Archive</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #ffffff;
+            background-image: url('https://supercell.com/_next/static/media/bg_wmg_brawlstars.8f6001aa.webp');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            min-height: 100vh;
+        }
+        
+        .news-item {
+            background-color: rgba(30, 30, 30, 0.8);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .news-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .news-date {
+            color: #aaaaaa;
+            font-size: 14px;
+        }
+        
+        .news-title {
+            font-size: 24px;
+            margin: 10px 0;
+            color: #ffcc00;
+        }
+        
+        .news-banner {
+            width: 100%;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="news-container">
+            <div class="loading">Loading news...</div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fetch news IDs first
+            fetch('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/NewsIDs')
+                .then(response => response.json())
+                .then(newsIDs => {
+                    const newsContainer = document.getElementById('news-container');
+                    newsContainer.innerHTML = '';
+                    
+                    // Process each news ID in reverse order (newest first)
+                    newsIDs.reverse().forEach(newsID => {
+                        fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/News${newsID}Data`)
+                            .then(response => response.json())
+                            .then(newsData => {
+                                const newsItem = document.createElement('div');
+                                newsItem.className = 'news-item';
+                                
+                                newsItem.innerHTML = `
+                                    <div class="news-date">${newsData.Date}</div>
+                                    <div class="news-title">${newsData.Name}</div>
+                                    ${newsData.Banner ? `<img src="${newsData.Banner}" class="news-banner" alt="News banner">` : ''}
+                                `;
+                                
+                                newsContainer.appendChild(newsItem);
+                            })
+                            .catch(error => {
+                                console.error(`Error loading news ${newsID}:`, error);
+                            });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading news IDs:', error);
+                    document.getElementById('news-container').innerHTML = 
+                        '<div class="news-item">Failed to load news. Please try again later.</div>';
+                });
+        });
+    </script>
+</body>
+</html>
