@@ -1,282 +1,375 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BaHR Stars News</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .news-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: white;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            min-height: 100vh;
-        }
-        
-        .banner-container {
-            position: relative;
-            width: 100%;
-            height: 300px;
-            overflow: hidden;
-        }
-        
-        .news-banner {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .banner-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
-            padding: 30px 20px 20px;
-            color: white;
-        }
-        
-        .news-title {
-            font-size: 2.2em;
-            font-weight: bold;
-            margin-bottom: 5px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-        }
-        
-        .news-date {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-        
-        .content-container {
-            padding: 30px;
-        }
-        
-        .news-text {
-            font-size: 1.1em;
-            line-height: 1.8;
-            margin-bottom: 30px;
-            text-align: justify;
-        }
-        
-        .news-text p {
-            margin-bottom: 20px;
-        }
-        
-        .navigation-buttons {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;
-        }
-        
-        .nav-btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 6px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-        
-        .back-btn {
-            background-color: #6c757d;
-            color: white;
-            flex: 1;
-        }
-        
-        .back-btn:hover {
-            background-color: #5a6268;
-        }
-        
-        .prev-btn {
-            background-color: #3498db;
-            color: white;
-        }
-        
-        .prev-btn:hover {
-            background-color: #2980b9;
-        }
-        
-        .next-btn {
-            background-color: #2ecc71;
-            color: white;
-        }
-        
-        .next-btn:hover {
-            background-color: #27ae60;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 50px;
-            font-size: 1.2em;
-        }
-        
-        .error {
-            text-align: center;
-            padding: 50px;
-            color: #e74c3c;
-            font-size: 1.2em;
-        }
-        
-        @media (max-width: 768px) {
-            .news-title {
-                font-size: 1.8em;
-            }
-            
-            .banner-container {
-                height: 250px;
-            }
-            
-            .content-container {
-                padding: 20px;
-            }
-            
-            .navigation-buttons {
-                flex-direction: column;
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Brawl Stars — Новость</title>
+  <style>
+    /* Подключение шрифта (вставь свою base64 если нужно) */
+    @font-face {
+      font-family: "Lilita One";
+      src: url('data:application/font-ttf;charset=utf-8;base64,<base64_encoded_font>') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body{
+      font-family: "Lilita One", Arial, sans-serif;
+      background: linear-gradient(180deg, #bfe7ff 0%, #8ec7ff 10%, #6aa1e6 30%, #122b66 100%);
+      color: #fff;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    /* Баннер (широкий логотип изображение) */
+    .banner-container{
+      position: relative;
+      width: 100%;
+      height: 300px;
+      overflow: hidden;
+      border-bottom: 6px solid #07163a;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.12));
+    }
+
+    .news-banner{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Накладка с датой и заголовком */
+    .banner-overlay{
+      position: absolute;
+      left: 40px;
+      right: 40px;
+      bottom: 28px;
+      text-align: left;
+      pointer-events: none;
+    }
+
+    .kicker {
+      font-size: 18px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #9bdcff;
+      opacity: 0.95;
+      margin-bottom: 8px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+
+    .news-title {
+      font-size: clamp(34px, 6vw, 72px);
+      line-height: 1;
+      color: #ffffff;
+      /* толстая чёрная обводка / эффект как на картинке */
+      -webkit-text-stroke: 6px #000;
+      text-shadow:
+        2px 2px 0 #000,
+        4px 4px 6px rgba(0,0,0,0.45);
+      margin-bottom: 6px;
+      pointer-events: none;
+    }
+
+    /* Контент-блок (тёмный, как на скрине) */
+    .content-container {
+      background: linear-gradient(180deg,#07204b 0%, #081436 100%);
+      padding: 30px;
+      border-top: 4px solid rgba(255,255,255,0.02);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      margin-top: -6px; /* чтобы выглядело плотнее с баннером */
+    }
+
+    .news-text {
+      max-width: 880px;
+      margin: 0 auto;
+      color: #eef6ff;
+      font-size: 18px;
+      line-height: 1.7;
+      text-align: left;
+    }
+
+    .news-text p { margin: 0 0 16px 0; }
+
+    /* Нижняя навигация */
+    .navigation-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 26px;
+      flex-wrap: wrap;
+    }
+
+    .left-actions { display:flex; gap:12px; align-items:center; }
+    .right-actions { display:flex; gap:12px; align-items:center; }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 18px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 800;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Ссылка "Назад к новостям" — компактная тёмная кнопка */
+    .back-btn {
+      background: linear-gradient(180deg,#0f2b58,#0b1e43);
+      color: #cfe9ff;
+      border: 2px solid rgba(255,255,255,0.05);
+      box-shadow: 0 4px rgba(0,0,0,0.45);
+    }
+
+    /* Предыдущая / следующая — в стиле Brawl (жёлтые яркие) */
+    .prev-btn, .next-btn {
+      background: linear-gradient(180deg,#ffd83a,#ffc400);
+      color: #111;
+      border: 0;
+      box-shadow: 0 6px #b07d00;
+      padding: 12px 22px;
+      font-size: 16px;
+      border-radius: 14px;
+    }
+
+    .prev-btn:active, .next-btn:active { transform: translateY(3px); box-shadow: 0 2px #b07d00; }
+
+    /* Скрытая кнопка */
+    .hidden { display: none !important; }
+
+    /* Поддержка небольших экранов */
+    @media (max-width: 700px) {
+      .banner-container { height: 200px; }
+      .banner-overlay { left: 16px; right: 16px; bottom: 18px; }
+      .news-title { font-size: clamp(22px, 7vw, 38px); -webkit-text-stroke: 4px #000; }
+      .content-container { padding: 18px; }
+      .navigation-buttons { flex-direction: column; align-items: stretch; }
+      .right-actions { justify-content: space-between; }
+      .news-text { font-size: 16px; }
+    }
+
+    /* --- Оригинальные вспомогательные стили (оставлены чтобы не сломать форматирование текста из данных) --- */
+    s1 { font-size: 0.8em; }
+    s2 { font-size: 1.2em; }
+    s3 { font-size: 1.5em; font-weight: bold; }
+    s4 { font-size: 2em; font-weight: bold; color: #4cc9f0; }
+    s5 { font-size: 2.5em; font-weight: bold; color: #ffcc00; text-shadow: 2px 2px 0 #000; }
+
+    c1 { color: #4cc9f0; } /* Синий */
+    c2 { color: #ff4655; } /* Красный */
+    c3 { color: #ffcc00; } /* Желтый */
+    c4 { color: #42b883; } /* Зеленый */
+    c5 { color: #ff7e29; } /* Оранжевый */
+
+    b1 { font-weight: bold; }
+    b2 { font-weight: 800; }
+
+    i1 { font-style: italic; }
+
+    u1 { text-decoration: underline; }
+
+    .highlight-box {
+      background: rgba(255,255,255,0.02);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 12px 0;
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+  </style>
 </head>
 <body>
-    <div class="news-container">
-        <div id="news-content">
-            <div class="loading">Loading news...</div>
+  <div class="wrap">
+    <div id="news-content">
+      <!-- Контент подставляется JS'ом -->
+      <div class="banner-container">
+        <!-- временный блок загрузки -->
+        <img class="news-banner" src="https://via.placeholder.com/1920x600?text=Loading+banner" alt="banner">
+        <div class="banner-overlay">
+          <div class="kicker">Новости</div>
+          <h1 class="news-title">Загрузка...</h1>
         </div>
-    </div>
+      </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Получаем ID новости из URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const newsId = urlParams.get('id');
-            
-            if (!newsId) {
-                document.getElementById('news-content').innerHTML = `
-                    <div class="error">
-                        <h2>News not found</h2>
-                        <p>No news ID specified in the URL</p>
-                        <a href="https://bahrstars.github.io/News.html" class="nav-btn back-btn">Back to News</a>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Загружаем данные новости
-            fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/News${newsId}Data`)
-                .then(response => {
-                    if (!response.ok) throw new Error('News not found');
-                    return response.json();
-                })
-                .then(newsData => {
-                    renderNewsPage(newsData, parseInt(newsId));
-                })
-                .catch(error => {
-                    console.error('Error loading news:', error);
-                    document.getElementById('news-content').innerHTML = `
-                        <div class="error">
-                            <h2>News not found</h2>
-                            <p>The requested news could not be loaded</p>
-                            <a href="https://bahrstars.github.io/News.html" class="nav-btn back-btn">Back to News</a>
-                        </div>
-                    `;
-                });
+      <div class="content-container">
+        <div class="news-text">
+          <p>Загрузка новости...</p>
+        </div>
+
+        <div class="navigation-buttons" style="margin-top: 18px;">
+          <div class="left-actions">
+            <a href="https://bahrstars.github.io/News.html" class="btn back-btn">← Назад к новостям</a>
+          </div>
+
+          <div class="right-actions">
+            <a id="prev-btn" class="btn prev-btn" href="#">← Предыдущая</a>
+            <a id="next-btn" class="btn next-btn" href="#">Следующая →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === поведение — сохранено как в исходной странице ===
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const newsId = urlParams.get('id');
+
+      if (!newsId) {
+        document.getElementById('news-content').innerHTML = `
+          <div class="banner-container">
+            <img class="news-banner" src="https://via.placeholder.com/1400x400?text=No+Banner" alt="no-banner">
+            <div class="banner-overlay">
+              <div class="kicker">Новости</div>
+              <h1 class="news-title">Новость не найдена</h1>
+            </div>
+          </div>
+          <div class="content-container">
+            <div class="news-text">
+              <p>Не указан id новости в URL.</p>
+            </div>
+            <div class="navigation-buttons">
+              <div class="left-actions">
+                <a href="https://bahrstars.github.io/News.html" class="btn back-btn">← Назад к новостям</a>
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // загружаем данные
+      fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/News${newsId}Data`)
+        .then(response => {
+          if (!response.ok) throw new Error('News not found');
+          return response.json();
+        })
+        .then(newsData => {
+          renderNewsPage(newsData, parseInt(newsId));
+        })
+        .catch(error => {
+          console.error('Error loading news:', error);
+          document.getElementById('news-content').innerHTML = `
+            <div class="banner-container">
+              <img class="news-banner" src="https://via.placeholder.com/1400x400?text=Error" alt="err">
+              <div class="banner-overlay">
+                <div class="kicker">Новости</div>
+                <h1 class="news-title">Не удалось загрузить новость</h1>
+              </div>
+            </div>
+            <div class="content-container">
+              <div class="news-text">
+                <p>Запрошенная новость не загрузилась. Проверьте соединение или попробуйте позже.</p>
+              </div>
+              <div class="navigation-buttons">
+                <div class="left-actions">
+                  <a href="https://bahrstars.github.io/News.html" class="btn back-btn">← Назад к новостям</a>
+                </div>
+              </div>
+            </div>
+          `;
         });
-        
-        function renderNewsPage(newsData, currentId) {
-            const date = newsData.Data || newsData.Date || 'Unknown date';
-            
-            document.getElementById('news-content').innerHTML = `
-                <div class="banner-container">
-                    <img src="${newsData.Banner || 'https://via.placeholder.com/1000x300?text=No+Banner'}" 
-                         alt="${newsData.Name}" 
-                         class="news-banner">
-                    <div class="banner-overlay">
-                        <h1 class="news-title">${newsData.Name || 'Untitled News'}</h1>
-                        <div class="news-date">${date}</div>
-                    </div>
-                </div>
-                
-                <div class="content-container">
-                    <div class="news-text">
-                        ${formatNewsText(newsData.Text || 'No content available')}
-                    </div>
-                    
-                    <div class="navigation-buttons">
-                        <a href="https://bahrstars.github.io/News.html" class="nav-btn back-btn">
-                            ← Back to News
-                        </a>
-                        <div style="display: flex; gap: 10px;">
-                            <a href="https://bahrstars.github.io/NewsPage.html?id=${currentId - 1}" 
-                               class="nav-btn prev-btn" id="prev-btn">
-                                ← Previous
-                            </a>
-                            <a href="https://bahrstars.github.io/NewsPage.html?id=${currentId + 1}" 
-                               class="nav-btn next-btn" id="next-btn">
-                                Next →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Проверяем существование предыдущей и следующей новостей
-            checkNewsExistence(currentId - 1, 'prev-btn');
-            checkNewsExistence(currentId + 1, 'next-btn');
+    });
+
+    function renderNewsPage(newsData, currentId) {
+      const date = newsData.Data || newsData.Date || 'Неизвестная дата';
+
+      document.getElementById('news-content').innerHTML = `
+        <div class="banner-container">
+          <img src="${newsData.Banner || 'https://via.placeholder.com/1400x400?text=No+Banner'}"
+               alt="${escapeHtml(newsData.Name || 'Новость')}"
+               class="news-banner">
+          <div class="banner-overlay">
+            <div class="kicker">Новости &nbsp; <span style="opacity:0.9; color:#d3f2ff;">${escapeHtml(date)}</span></div>
+            <h1 class="news-title">${escapeHtml(newsData.Name || 'Без названия')}</h1>
+          </div>
+        </div>
+
+        <div class="content-container">
+          <div class="news-text">
+            ${formatNewsText(newsData.Text || 'Нет содержимого')}
+          </div>
+
+          <div class="navigation-buttons">
+            <div class="left-actions">
+              <a href="https://bahrstars.github.io/News.html" class="btn back-btn">← Назад к новостям</a>
+            </div>
+
+            <div class="right-actions">
+              <a href="https://bahrstars.github.io/NewsPage.html?id=${currentId - 1}"
+                 class="btn prev-btn" id="prev-btn">← Предыдущая</a>
+              <a href="https://bahrstars.github.io/NewsPage.html?id=${currentId + 1}"
+                 class="btn next-btn" id="next-btn">Следующая →</a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // проверяем наличие prev/next
+      checkNewsExistence(currentId - 1, 'prev-btn');
+      checkNewsExistence(currentId + 1, 'next-btn');
+    }
+
+    function formatNewsText(text) {
+      if (!text) return '<p>Нет содержимого</p>';
+
+      // Если внутри уже есть HTML-теги — вернуть как есть (чтобы не "сломать" форматирование)
+      if (text.includes('<') && text.includes('>')) {
+        return text;
+      }
+
+      // Иначе разбить на параграфы по двойному переносу строки
+      const paragraphs = text.split('\n\n');
+      return paragraphs.map(p => {
+        if (p.trim()) {
+          return `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`;
         }
-        
-        function formatNewsText(text) {
-            // Простой форматирование текста - замена переносов на параграфы
-            if (!text) return '<p>No content available</p>';
-            
-            // Если текст содержит HTML, возвращаем как есть
-            if (text.includes('<') && text.includes('>')) {
-                return text;
-            }
-            
-            // Иначе разбиваем на параграфы по двойным переносам строк
-            const paragraphs = text.split('\n\n');
-            return paragraphs.map(p => {
-                if (p.trim()) {
-                    return `<p>${p.replace(/\n/g, '<br>')}</p>`;
-                }
-                return '';
-            }).join('');
-        }
-        
-        function checkNewsExistence(newsId, buttonId) {
-            if (newsId <= 0) {
-                document.getElementById(buttonId).style.display = 'none';
-                return;
-            }
-            
-            fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/News${newsId}Data`)
-                .then(response => {
-                    if (!response.ok) {
-                        document.getElementById(buttonId).style.display = 'none';
-                    }
-                })
-                .catch(() => {
-                    document.getElementById(buttonId).style.display = 'none';
-                });
-        }
-    </script>
+        return '';
+      }).join('');
+    }
+
+    function checkNewsExistence(newsId, buttonId) {
+      // Если id <= 0 — скрываем
+      if (newsId <= 0) {
+        const el = document.getElementById(buttonId);
+        if (el) el.classList.add('hidden');
+        return;
+      }
+
+      fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/News${newsId}Data`)
+        .then(response => {
+          if (!response.ok) {
+            const el = document.getElementById(buttonId);
+            if (el) el.classList.add('hidden');
+          }
+        })
+        .catch(() => {
+          const el = document.getElementById(buttonId);
+          if (el) el.classList.add('hidden');
+        });
+    }
+
+    // Небольшая защита: экранируем вставляемый текст (кроме тех случаев, где мы намеренно рендерим HTML)
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
 </body>
 </html>
