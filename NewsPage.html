@@ -106,6 +106,22 @@
       margin: 0 0 18px 0; 
     }
 
+    /* Стили для встроенных изображений */
+    .inline-image {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 15px auto;
+      border-radius: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .image-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+
     /* Нижняя навигация */
     .navigation-buttons {
       display: flex;
@@ -186,6 +202,11 @@
       .btn {
         padding: 10px 16px;
         font-size: 14px;
+      }
+
+      .inline-image {
+        margin: 10px auto;
+        border-radius: 8px;
       }
     }
 
@@ -355,16 +376,17 @@
     function formatNewsText(text) {
       if (!text) return '<p>Нет содержимого</p>';
 
-      // Если внутри уже есть HTML-теги — вернуть как есть (чтобы не "сломать" форматирование)
-      if (text.includes('<') && text.includes('>')) {
-        // Но все равно заменяем /n на переносы строк
-        text = text.replace(/\/n/g, '\n');
-        return processTextWithLineBreaks(text);
-      }
-
       // Обрабатываем тег /n для переноса строк
       text = text.replace(/\/n/g, '\n');
       
+      // Обрабатываем встроенные изображения <i>ссылка</i>
+      text = processInlineImages(text);
+      
+      // Если внутри уже есть HTML-теги — вернуть как есть
+      if (text.includes('<') && text.includes('>')) {
+        return processTextWithLineBreaks(text);
+      }
+
       // Разбить на параграфы по двойному переносу строки
       const paragraphs = text.split('\n\n');
       return paragraphs.map(p => {
@@ -375,8 +397,21 @@
       }).join('');
     }
 
+    function processInlineImages(text) {
+      // Регулярное выражение для поиска тегов <i>ссылка_на_картинку</i>
+      const imageRegex = /<i>(.*?)<\/i>/g;
+      
+      // Заменяем теги <i> на HTML изображений
+      return text.replace(imageRegex, (match, imageUrl) => {
+        return `<div class="image-container"><img src="${imageUrl.trim()}" class="inline-image" alt="Встроенное изображение"></div>`;
+      });
+    }
+
     function processTextWithLineBreaks(text) {
-      // Для текста с HTML-тегами: заменяем \n на <br>, но сохраняем HTML
+      // Сначала обрабатываем изображения
+      text = processInlineImages(text);
+      
+      // Затем заменяем \n на <br> для переносов строк
       return text.replace(/\n/g, '<br>');
     }
 
