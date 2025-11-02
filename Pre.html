@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pin Brawl - Предрегистрация</title>
+    <title>Pin Brawl</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
@@ -12,100 +12,71 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #ffffff;
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
-            max-width: 400px;
             width: 100%;
+            max-width: 320px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 25px;
+            text-align: center;
+            gap: 24px;
         }
 
         .logo {
-            width: 200px;
+            width: 180px;
             height: auto;
-            margin-top: 20px;
-        }
-
-        .title {
-            font-size: 28px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #ff8a00, #e52e71);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 10px rgba(229, 46, 113, 0.3);
-        }
-
-        .subtitle {
-            font-size: 16px;
-            text-align: center;
-            color: #a0a0c0;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        .card {
-            background: rgba(30, 30, 50, 0.7);
-            border-radius: 16px;
-            padding: 25px;
-            width: 100%;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
         }
 
         .global-icon {
-            width: 60px;
+            width: 64px;
             height: auto;
-            margin-bottom: 15px;
         }
 
         .username {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
-            margin: 15px 0;
-            color: #4cc9f0;
+            padding: 8px 16px;
+            border-radius: 12px;
+            background: var(--secondary-bg);
+        }
+
+        .description {
+            font-size: 15px;
+            line-height: 1.4;
+            opacity: 0.8;
         }
 
         .button {
-            background: url('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Button.png') center/cover no-repeat;
+            background: url('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Button.png') center/contain no-repeat;
             color: white;
             border: none;
-            border-radius: 12px;
-            padding: 16px 24px;
-            font-size: 18px;
+            width: 200px;
+            height: 60px;
+            font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(229, 46, 113, 0.4);
-            position: relative;
-            overflow: hidden;
+            transition: transform 0.1s;
         }
 
         .button:active {
-            transform: scale(0.98);
-            box-shadow: 0 2px 8px rgba(229, 46, 113, 0.4);
+            transform: scale(0.95);
         }
 
         .button:disabled {
-            opacity: 0.6;
+            opacity: 0.7;
             cursor: not-allowed;
             transform: none;
         }
@@ -114,18 +85,18 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 12px;
         }
 
         .loading-spinner {
-            width: 60px;
-            height: 60px;
+            width: 40px;
+            height: 40px;
             animation: spin 1.5s linear infinite;
         }
 
         .loading-text {
-            font-size: 16px;
-            color: #a0a0c0;
+            font-size: 15px;
+            opacity: 0.8;
         }
 
         .success {
@@ -136,21 +107,44 @@
         }
 
         .success-icon {
-            width: 100px;
+            width: 80px;
             height: auto;
-        }
-
-        .success-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #4ade80;
         }
 
         .success-text {
             font-size: 16px;
-            text-align: center;
-            color: #a0a0c0;
-            line-height: 1.5;
+            line-height: 1.4;
+            opacity: 0.9;
+        }
+
+        .support-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--separator-color);
+        }
+
+        .support-text {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 12px;
+        }
+
+        .support-button {
+            background: var(--secondary-bg);
+            color: var(--text-color);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .support-button:active {
+            opacity: 0.7;
         }
 
         .confirmation {
@@ -161,42 +155,48 @@
         }
 
         .confirmation-text {
-            font-size: 16px;
-            text-align: center;
-            color: #a0a0c0;
-            line-height: 1.5;
+            font-size: 15px;
+            line-height: 1.4;
+            opacity: 0.9;
         }
 
         .button-group {
             display: flex;
-            gap: 15px;
-            width: 100%;
+            gap: 12px;
+        }
+
+        .confirm-button, .cancel-button {
+            width: 120px;
+            height: 44px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s;
         }
 
         .confirm-button {
-            flex: 1;
-            background: linear-gradient(135deg, #4ade80, #22c55e);
+            background: var(--button-color);
             color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 14px 20px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
         }
 
         .cancel-button {
-            flex: 1;
-            background: rgba(239, 68, 68, 0.8);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 14px 20px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            background: var(--secondary-bg);
+            color: var(--text-color);
+        }
+
+        .confirm-button:active, .cancel-button:active {
+            opacity: 0.8;
+        }
+
+        .error {
+            color: #ef4444;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(239, 68, 68, 0.1);
+            display: none;
         }
 
         @keyframes spin {
@@ -204,32 +204,37 @@
             100% { transform: rotate(360deg); }
         }
 
-        .error {
-            color: #ef4444;
-            font-size: 14px;
-            margin-top: 10px;
-            display: none;
+        /* Telegram theme variables */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --secondary-bg: #f0f0f0;
+            --separator-color: #e5e5e5;
+            --button-color: #2481cc;
+        }
+
+        .theme-dark {
+            --bg-color: #1c1c1c;
+            --text-color: #ffffff;
+            --secondary-bg: #2d2d2d;
+            --separator-color: #3d3d3d;
+            --button-color: #3d8ecd;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Logo.png" alt="Pin Brawl Logo" class="logo">
+        <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Logo.png" alt="Pin Brawl" class="logo">
         
-        <h1 class="title">PIN BRAWL</h1>
-        <p class="subtitle">Фанатская игра вдохновлённая Brawl Stars<br>Присоединяйся к бета-тестированию!</p>
-        
-        <div class="card" id="registrationCard">
+        <div id="registrationView">
             <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Global.png" alt="Global" class="global-icon">
-            <h2>Предрегистрация на бета-тест</h2>
-            <p class="username" id="usernameDisplay">@username</p>
-            <p>Нажмите кнопку ниже, чтобы зарегистрироваться на бета-тестирование игры Pin Brawl</p>
+            <div class="username" id="usernameDisplay">@username</div>
+            <p class="description">Нажмите кнопку ниже, чтобы зарегистрироваться на бета-тестирование игры Pin Brawl</p>
             <button class="button" id="registerButton">ПРЕДРЕГИСТРАЦИЯ</button>
             <div class="error" id="errorMessage"></div>
         </div>
         
-        <div class="card confirmation" id="confirmationCard">
-            <h2>Подтверждение</h2>
+        <div class="confirmation" id="confirmationView">
             <p class="confirmation-text">Вы уверены, что хотите зарегистрировать аккаунт <span id="confirmUsername" class="username">@username</span> для участия в бета-тестировании Pin Brawl?</p>
             <div class="button-group">
                 <button class="cancel-button" id="cancelButton">Отмена</button>
@@ -237,15 +242,19 @@
             </div>
         </div>
         
-        <div class="card loading" id="loadingCard">
+        <div class="loading" id="loadingView">
             <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Loading.png" alt="Loading" class="loading-spinner">
             <p class="loading-text">Регистрируем ваш аккаунт...</p>
         </div>
         
-        <div class="card success" id="successCard">
+        <div class="success" id="successView">
             <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Mangoboom.png" alt="Success" class="success-icon">
-            <h2 class="success-title">Успешная регистрация!</h2>
             <p class="success-text">Вы успешно зарегистрированы на бета-тестирование Pin Brawl! Мы уведомим вас, когда тестирование начнётся.</p>
+            
+            <div class="support-section">
+                <p class="support-text">Есть вопросы?</p>
+                <a href="https://t.me/PinBrawl?direct" class="support-button">Напишите нам</a>
+            </div>
         </div>
     </div>
 
@@ -262,13 +271,35 @@
         // Инициализация Telegram Web App
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.enableClosingConfirmation();
+        
+        // Установка темы Telegram
+        function setTelegramTheme() {
+            const themeParams = tg.themeParams;
+            const isDark = tg.colorScheme === 'dark';
+            
+            document.body.style.backgroundColor = themeParams.bg_color || (isDark ? '#1c1c1c' : '#ffffff');
+            document.body.style.color = themeParams.text_color || (isDark ? '#ffffff' : '#000000');
+            
+            if (isDark) {
+                document.body.classList.add('theme-dark');
+            } else {
+                document.body.classList.remove('theme-dark');
+            }
+            
+            // Установка кастомных CSS переменных
+            const root = document.documentElement;
+            root.style.setProperty('--bg-color', themeParams.bg_color || (isDark ? '#1c1c1c' : '#ffffff'));
+            root.style.setProperty('--text-color', themeParams.text_color || (isDark ? '#ffffff' : '#000000'));
+            root.style.setProperty('--secondary-bg', themeParams.secondary_bg_color || (isDark ? '#2d2d2d' : '#f0f0f0'));
+            root.style.setProperty('--separator-color', themeParams.hint_color || (isDark ? '#3d3d3d' : '#e5e5e5'));
+            root.style.setProperty('--button-color', themeParams.button_color || (isDark ? '#3d8ecd' : '#2481cc'));
+        }
         
         // Элементы DOM
-        const registrationCard = document.getElementById('registrationCard');
-        const confirmationCard = document.getElementById('confirmationCard');
-        const loadingCard = document.getElementById('loadingCard');
-        const successCard = document.getElementById('successCard');
+        const registrationView = document.getElementById('registrationView');
+        const confirmationView = document.getElementById('confirmationView');
+        const loadingView = document.getElementById('loadingView');
+        const successView = document.getElementById('successView');
         const registerButton = document.getElementById('registerButton');
         const confirmButton = document.getElementById('confirmButton');
         const cancelButton = document.getElementById('cancelButton');
@@ -279,10 +310,17 @@
         // Получение данных пользователя Telegram
         const user = tg.initDataUnsafe.user;
         const username = user ? user.username : 'unknown_user';
+        const userId = user ? user.id : null;
         
         // Отображение имени пользователя
         usernameDisplay.textContent = `@${username}`;
         confirmUsername.textContent = `@${username}`;
+        
+        // Установка темы
+        setTelegramTheme();
+        
+        // Обработчик изменения темы
+        tg.onEvent('themeChanged', setTelegramTheme);
         
         // Проверка, зарегистрирован ли пользователь уже
         checkIfRegistered();
@@ -294,46 +332,48 @@
         
         // Функции
         function showConfirmation() {
-            registrationCard.style.display = 'none';
-            confirmationCard.style.display = 'flex';
+            registrationView.style.display = 'none';
+            confirmationView.style.display = 'flex';
         }
         
         function hideConfirmation() {
-            confirmationCard.style.display = 'none';
-            registrationCard.style.display = 'block';
+            confirmationView.style.display = 'none';
+            registrationView.style.display = 'block';
+            errorMessage.style.display = 'none';
         }
         
         async function registerUser() {
-            confirmationCard.style.display = 'none';
-            loadingCard.style.display = 'flex';
+            confirmationView.style.display = 'none';
+            loadingView.style.display = 'flex';
+            errorMessage.style.display = 'none';
             
             try {
                 // Сохранение в Firebase
-                await saveToFirebase(username);
+                await saveToFirebase(username, userId);
                 
                 // Успешная регистрация
                 setTimeout(() => {
-                    loadingCard.style.display = 'none';
-                    successCard.style.display = 'flex';
+                    loadingView.style.display = 'none';
+                    successView.style.display = 'flex';
                     registerButton.disabled = true;
-                    registerButton.textContent = 'УЖЕ ЗАРЕГИСТРИРОВАН';
-                }, 1500);
+                }, 1000);
                 
             } catch (error) {
                 console.error('Ошибка регистрации:', error);
-                loadingCard.style.display = 'none';
-                registrationCard.style.display = 'block';
+                loadingView.style.display = 'none';
+                registrationView.style.display = 'block';
                 errorMessage.textContent = 'Ошибка регистрации. Попробуйте позже.';
                 errorMessage.style.display = 'block';
             }
         }
         
-        function saveToFirebase(username) {
+        function saveToFirebase(username, userId) {
             return new Promise((resolve, reject) => {
                 const userRef = database.ref('preregistrations/' + username);
                 
                 userRef.set({
                     username: username,
+                    userId: userId,
                     timestamp: Date.now(),
                     platform: 'telegram'
                 })
@@ -351,7 +391,6 @@
                         // Пользователь уже зарегистрирован
                         registerButton.disabled = true;
                         registerButton.textContent = 'УЖЕ ЗАРЕГИСТРИРОВАН';
-                        registrationCard.style.display = 'block';
                     }
                 })
                 .catch(error => {
