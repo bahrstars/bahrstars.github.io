@@ -35,9 +35,23 @@
             gap: 24px;
         }
 
+        .logo-container {
+            width: 140px;
+            height: 140px;
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--secondary-bg);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--separator-color);
+        }
+
         .logo {
-            width: 180px;
+            width: 120px;
             height: auto;
+            border-radius: 16px;
         }
 
         .global-icon {
@@ -60,15 +74,16 @@
         }
 
         .button {
-            background: url('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Button.png') center/contain no-repeat;
+            background: var(--button-color);
             color: white;
             border: none;
             width: 200px;
-            height: 60px;
+            height: 54px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             transition: transform 0.1s;
+            border-radius: 14px;
         }
 
         .button:active {
@@ -224,7 +239,9 @@
 </head>
 <body>
     <div class="container">
-        <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Logo.png" alt="Pin Brawl" class="logo">
+        <div class="logo-container">
+            <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Logo.png" alt="Pin Brawl" class="logo">
+        </div>
         
         <div id="registrationView">
             <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Global.png" alt="Global" class="global-icon">
