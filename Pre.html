@@ -23,6 +23,7 @@
             justify-content: center;
             padding: 20px;
             transition: background-color 0.3s, color 0.3s;
+            overflow: hidden;
         }
 
         .container {
@@ -32,45 +33,48 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            gap: 24px;
-        }
-
-        .logo-container {
-            width: 140px;
-            height: 140px;
-            border-radius: 24px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--secondary-bg);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--separator-color);
+            gap: 20px;
         }
 
         .logo {
             width: 120px;
-            height: auto;
-            border-radius: 16px;
+            height: 120px;
+            border-radius: 24px;
         }
 
-        .global-icon {
-            width: 64px;
-            height: auto;
+        .app-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 2px;
+        }
+
+        .app-subtitle {
+            font-size: 14px;
+            color: #888;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .platform-note {
+            font-size: 12px;
+            color: #888;
         }
 
         .username {
             font-size: 17px;
             font-weight: 600;
-            padding: 8px 16px;
+            padding: 10px 18px;
             border-radius: 12px;
             background: var(--secondary-bg);
+            margin: 12px 0;
         }
 
         .description {
             font-size: 15px;
             line-height: 1.4;
             opacity: 0.8;
+            margin-bottom: 8px;
         }
 
         .button {
@@ -84,6 +88,7 @@
             cursor: pointer;
             transition: transform 0.1s;
             border-radius: 14px;
+            margin-top: 12px;
         }
 
         .button:active {
@@ -100,12 +105,12 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
         }
 
         .loading-spinner {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             animation: spin 1.5s linear infinite;
         }
 
@@ -122,20 +127,23 @@
         }
 
         .success-icon {
-            width: 80px;
-            height: auto;
+            width: 70px;
+            height: 70px;
+            margin: 10px 0;
         }
 
         .success-text {
             font-size: 16px;
             line-height: 1.4;
             opacity: 0.9;
+            margin-bottom: 8px;
         }
 
         .support-section {
-            margin-top: 16px;
-            padding-top: 16px;
+            margin-top: 20px;
+            padding-top: 20px;
             border-top: 1px solid var(--separator-color);
+            width: 100%;
         }
 
         .support-text {
@@ -173,11 +181,13 @@
             font-size: 15px;
             line-height: 1.4;
             opacity: 0.9;
+            margin: 8px 0;
         }
 
         .button-group {
             display: flex;
             gap: 12px;
+            margin-top: 8px;
         }
 
         .confirm-button, .cancel-button {
@@ -208,10 +218,11 @@
         .error {
             color: #ef4444;
             font-size: 14px;
-            padding: 8px 12px;
+            padding: 10px 12px;
             border-radius: 8px;
             background: rgba(239, 68, 68, 0.1);
             display: none;
+            margin-top: 12px;
         }
 
         @keyframes spin {
@@ -239,12 +250,15 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo-container">
+        <!-- Только для главной страницы -->
+        <div id="mainHeader">
             <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Logo.png" alt="Pin Brawl" class="logo">
+            <div class="app-title">Pin Brawl</div>
+            <div class="app-subtitle">Ранний доступ</div>
+            <div class="platform-note">Только для Android/эмуляторов Android</div>
         </div>
         
         <div id="registrationView">
-            <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Global.png" alt="Global" class="global-icon">
             <div class="username" id="usernameDisplay">@username</div>
             <p class="description">Нажмите кнопку ниже, чтобы зарегистрироваться на бета-тестирование игры Pin Brawl</p>
             <button class="button" id="registerButton">ПРЕДРЕГИСТРАЦИЯ</button>
@@ -313,6 +327,7 @@
         }
         
         // Элементы DOM
+        const mainHeader = document.getElementById('mainHeader');
         const registrationView = document.getElementById('registrationView');
         const confirmationView = document.getElementById('confirmationView');
         const loadingView = document.getElementById('loadingView');
@@ -349,11 +364,13 @@
         
         // Функции
         function showConfirmation() {
+            mainHeader.style.display = 'none';
             registrationView.style.display = 'none';
             confirmationView.style.display = 'flex';
         }
         
         function hideConfirmation() {
+            mainHeader.style.display = 'block';
             confirmationView.style.display = 'none';
             registrationView.style.display = 'block';
             errorMessage.style.display = 'none';
@@ -378,6 +395,7 @@
             } catch (error) {
                 console.error('Ошибка регистрации:', error);
                 loadingView.style.display = 'none';
+                mainHeader.style.display = 'block';
                 registrationView.style.display = 'block';
                 errorMessage.textContent = 'Ошибка регистрации. Попробуйте позже.';
                 errorMessage.style.display = 'block';
