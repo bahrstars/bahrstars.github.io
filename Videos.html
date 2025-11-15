@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pin Brawl — Видео</title>
+  <style>
+    @font-face {
+      font-family: "Lilita One";
+      src: url('data:application/font-ttf;charset=utf-8;base64,<base64_encoded_font>') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Lilita One", Arial, sans-serif;
+      background: #0a1129;
+      color: #fff;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .videos-container {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    .video-item {
+      background: linear-gradient(180deg, #0a1835 0%, #08122a 100%);
+      transition: all 0.3s ease;
+      border: 2px solid rgba(74, 119, 189, 0.3);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      cursor: pointer;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    .video-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+      border-color: rgba(74, 119, 189, 0.6);
+    }
+
+    .video-thumbnail-container {
+      position: relative;
+      width: 100%;
+      height: 180px;
+      overflow: hidden;
+    }
+
+    .video-thumbnail {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .video-item:hover .video-thumbnail {
+      transform: scale(1.05);
+    }
+
+    .play-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60px;
+      height: 60px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .video-item:hover .play-icon {
+      opacity: 1;
+    }
+
+    .play-icon::after {
+      content: '';
+      width: 0;
+      height: 0;
+      border-left: 15px solid #fff;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      margin-left: 5px;
+    }
+
+    .video-content {
+      padding: 18px;
+    }
+
+    .video-title {
+      font-size: 16px;
+      color: #ffffff;
+      margin: 0 0 10px 0;
+      line-height: 1.4;
+      height: 45px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .video-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #9bdcff;
+      font-size: 14px;
+    }
+
+    .video-date {
+      color: #9bdcff;
+    }
+
+    .video-author {
+      color: #ffcc00;
+      font-weight: bold;
+    }
+
+    .loading, .error-message {
+      background: linear-gradient(180deg, #0a1835 0%, #08122a 100%);
+      padding: 40px;
+      text-align: center;
+      border: 2px solid rgba(74, 119, 189, 0.3);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      border-radius: 12px;
+      grid-column: 1 / -1;
+    }
+
+    .loading {
+      color: #9bdcff;
+      font-size: 18px;
+    }
+
+    .error-message {
+      color: #ff4655;
+      font-size: 16px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .video-item {
+      animation: fadeIn 0.5s ease forwards;
+      opacity: 0;
+    }
+
+    .video-item:nth-child(1) { animation-delay: 0.1s; }
+    .video-item:nth-child(2) { animation-delay: 0.2s; }
+    .video-item:nth-child(3) { animation-delay: 0.3s; }
+    .video-item:nth-child(4) { animation-delay: 0.4s; }
+    .video-item:nth-child(5) { animation-delay: 0.5s; }
+    .video-item:nth-child(6) { animation-delay: 0.6s; }
+    .video-item:nth-child(7) { animation-delay: 0.7s; }
+    .video-item:nth-child(8) { animation-delay: 0.8s; }
+    .video-item:nth-child(9) { animation-delay: 0.9s; }
+
+    @media (max-width: 1024px) {
+      .videos-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .wrap {
+        padding: 0 15px;
+      }
+      
+      .videos-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .video-thumbnail-container {
+        height: 200px;
+      }
+      
+      .video-content {
+        padding: 15px;
+      }
+      
+      .video-title {
+        font-size: 18px;
+        height: auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .video-thumbnail-container {
+        height: 180px;
+      }
+      
+      .video-title {
+        font-size: 17px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="videos-container" id="videos-container">
+      <div class="loading">Загрузка видео...</div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const API_KEY = 'AIzaSyC9bG5mHEAm-Ny7REY-PYUktLiCBYyotos';
+      const CHANNEL_ID = 'UC3leOhpSOh07lNq555epvMA'; // PinsBrawl
+      const MAX_RESULTS = 30;
+      
+      const videosContainer = document.getElementById('videos-container');
+      
+      function fetchVideos() {
+        const url = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=${MAX_RESULTS}&type=video`;
+        
+        fetch(url)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('YouTube API response:', data);
+            videosContainer.innerHTML = '';
+            
+            if (!data.items || data.items.length === 0) {
+              videosContainer.innerHTML = '<div class="error-message">Видео не найдены</div>';
+              return;
+            }
+            
+            const videoItems = data.items.filter(item => item.id.kind === 'youtube#video');
+            
+            if (videoItems.length === 0) {
+              videosContainer.innerHTML = '<div class="error-message">Нет доступных видео</div>';
+              return;
+            }
+            
+            videoItems.forEach((video, index) => {
+              const videoItem = document.createElement('div');
+              videoItem.className = 'video-item';
+              
+              const publishDate = new Date(video.snippet.publishedAt);
+              const formattedDate = `${publishDate.getDate().toString().padStart(2, '0')}.${(publishDate.getMonth() + 1).toString().padStart(2, '0')}.${publishDate.getFullYear()}`;
+              
+              videoItem.innerHTML = `
+                <div class="video-thumbnail-container">
+                  <img src="${video.snippet.thumbnails.medium.url}" 
+                       class="video-thumbnail" alt="${video.snippet.title}"
+                       onerror="this.src='https://via.placeholder.com/320x180/1a3e8c/ffffff?text=No+Thumbnail'">
+                  <div class="play-icon"></div>
+                </div>
+                <div class="video-content">
+                  <div class="video-title">${video.snippet.title}</div>
+                  <div class="video-meta">
+                    <span class="video-date">${formattedDate}</span>
+                    <span class="video-author">${video.snippet.channelTitle}</span>
+                  </div>
+                </div>
+              `;
+              
+              videoItem.addEventListener('click', () => {
+                window.open(`https://www.youtube.com/watch?v=${video.id.videoId}`, '_blank');
+              });
+              
+              videosContainer.appendChild(videoItem);
+            });
+          })
+          .catch(error => {
+            console.error('Error loading videos:', error);
+            videosContainer.innerHTML = 
+              `<div class="error-message">Ошибка загрузки: ${error.message}. Проверьте консоль для деталей.</div>`;
+          });
+      }
+      
+      fetchVideos();
+    });
+  </script>
+</body>
+</html>
