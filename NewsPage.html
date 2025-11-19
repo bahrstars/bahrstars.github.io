@@ -38,7 +38,7 @@
     .banner-container{
       position: relative;
       width: 100%;
-      height: 320px;
+      height: 240px;
       overflow: hidden;
       background: linear-gradient(135deg, #0f2b5e 0%, #1a3e8c 100%);
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
@@ -57,29 +57,29 @@
       left: 0;
       right: 0;
       bottom: 0;
-      padding: 30px 40px;
+      padding: 25px 35px;
       text-align: left;
       pointer-events: none;
       background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
     }
 
     .kicker {
-      font-size: 16px;
+      font-size: 14px;
       letter-spacing: 1.5px;
       text-transform: uppercase;
       color: #9bdcff;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       font-weight: 700;
       pointer-events: none;
       text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
 
     .news-title {
-      font-size: clamp(32px, 6vw, 56px);
+      font-size: clamp(28px, 5vw, 44px);
       line-height: 1.1;
       color: #ffffff;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       pointer-events: none;
       font-weight: 800;
     }
@@ -87,7 +87,7 @@
     /* Контент-блок (тёмный, как на скрине) */
     .content-container {
       background: linear-gradient(180deg, #0a1835 0%, #08122a 100%);
-      padding: 35px 40px;
+      padding: 30px 35px;
       border-top: 1px solid rgba(74, 119, 189, 0.2);
       box-shadow: 0 6px 18px rgba(0,0,0,0.35);
       width: 100%;
@@ -188,13 +188,13 @@
 
     /* Поддержка небольших экранов */
     @media (max-width: 768px) {
-      .banner-container { height: 220px; }
+      .banner-container { height: 180px; }
       .banner-overlay { 
-        padding: 20px; 
+        padding: 18px; 
         text-align: center;
       }
-      .news-title { font-size: clamp(28px, 7vw, 42px); }
-      .content-container { padding: 25px 20px; }
+      .news-title { font-size: clamp(24px, 6vw, 36px); }
+      .content-container { padding: 22px 18px; }
       .navigation-buttons { flex-direction: column; align-items: stretch; }
       .right-actions { justify-content: space-between; }
       .news-text { font-size: 16px; }
