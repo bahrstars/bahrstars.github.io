@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pin Tap</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            user-select: none;
+        }
+        
+        body {
+            background-color: #1a1a2e;
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+            background-image: url('https://i.postimg.cc/rmrcm2m4/IMG-0588.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: linear-gradient(90deg, rgba(255, 50, 100, 0.9) 0%, rgba(150, 0, 200, 0.9) 100%);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            border: 3px solid #ffcc00;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffcc00;
+            text-shadow: 3px 3px 0 #ff0066, 5px 5px 0 #000;
+            letter-spacing: 2px;
+        }
+        
+        .currencies {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .currency {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 15px;
+            border-radius: 50px;
+            border: 2px solid gold;
+            min-width: 150px;
+        }
+        
+        .currency-icon {
+            font-size: 1.8rem;
+            margin-right: 10px;
+        }
+        
+        .currency-info h3 {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        .currency-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .event-currency {
+            border-color: #4CAF50;
+            background: rgba(30, 80, 30, 0.7);
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .clicker-area {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            border: 5px solid #ff3366;
+            box-shadow: 0 10px 30px rgba(255, 50, 100, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .clicker-title {
+            font-size: 2rem;
+            color: #ffcc00;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #ff0066;
+        }
+        
+        .click-character {
+            width: 250px;
+            height: 250px;
+            margin: 20px auto;
+            cursor: pointer;
+            transition: transform 0.1s;
+            position: relative;
+        }
+        
+        .click-character img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .click-character:active {
+            transform: scale(0.95);
+        }
+        
+        .click-info {
+            background: rgba(255, 50, 100, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        
+        .click-power {
+            font-size: 1.5rem;
+            color: #ffcc00;
+            margin-bottom: 5px;
+        }
+        
+        .click-per-second {
+            font-size: 1.2rem;
+            color: #4CAF50;
+        }
+        
+        .shop {
+            width: 350px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            padding: 20px;
+            border: 5px solid #3366ff;
+            box-shadow: 0 10px 30px rgba(50, 100, 255, 0.3);
+        }
+        
+        .shop-title {
+            font-size: 1.8rem;
+            color: #3366ff;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #000;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: rgba(50, 50, 80, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .tab.active {
+            background: #3366ff;
+        }
+        
+        .items-container {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .item {
+            display: flex;
+            background: rgba(60, 60, 100, 0.7);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+            border: 2px solid #444;
+            transition: all 0.3s;
+        }
+        
+        .item:hover {
+            border-color: #ffcc00;
+            transform: translateY(-3px);
+        }
+        
+        .item-icon {
+            width: 60px;
+            height: 60px;
+            margin-right: 15px;
+        }
+        
+        .item-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .item-info {
+            flex: 1;
+        }
+        
+        .item-name {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .item-description {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        
+        .item-effect {
+            font-size: 0.9rem;
+            color: #4CAF50;
+        }
+        
+        .item-price {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .price-amount {
+            font-size: 1.5rem;
+            color: #ffcc00;
+            font-weight: bold;
+        }
+        
+        .price-icon {
+            font-size: 1.5rem;
+        }
+        
+        .buy-btn {
+            background: #ff3366;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 5px;
+            transition: background 0.3s;
+        }
+        
+        .buy-btn:hover {
+            background: #ff0044;
+        }
+        
+        .buy-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .event-banner {
+            background: linear-gradient(90deg, rgba(30, 80, 30, 0.9) 0%, rgba(50, 120, 50, 0.9) 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 5px solid #4CAF50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 5px 20px rgba(50, 200, 50, 0.4);
+        }
+        
+        .event-info h2 {
+            color: #fff;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .event-info p {
+            color: #ccffcc;
+            font-size: 1.2rem;
+        }
+        
+        .event-timer {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 200px;
+        }
+        
+        .timer-title {
+            color: #ffcc00;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .timer {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff6666;
+        }
+        
+        .achievements {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            padding: 20px;
+            border: 5px solid #ff9900;
+            margin-bottom: 30px;
+        }
+        
+        .achievements-title {
+            font-size: 1.8rem;
+            color: #ff9900;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0 #000;
+        }
+        
+        .achievement {
+            display: flex;
+            align-items: center;
+            background: rgba(80, 60, 20, 0.7);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .achievement.locked {
+            opacity: 0.6;
+        }
+        
+        .achievement-icon {
+            width: 60px;
+            height: 60px;
+            background: #444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            font-size: 2rem;
+        }
+        
+        .achievement-info {
+            flex: 1;
+        }
+        
+        .achievement-name {
+            font-size: 1.3rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .achievement-desc {
+            color: #ccc;
+            font-size: 1rem;
+        }
+        
+        .achievement-reward {
+            color: #ffcc00;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #aaa;
+            font-size: 0.9rem;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.5s;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .character-select {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .character-option {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid #444;
+            transition: all 0.3s;
+        }
+        
+        .character-option.active {
+            border-color: #ffcc00;
+            transform: scale(1.1);
+        }
+        
+        .character-option img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Анимация клика */
+        .click-effect {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 0, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: clickAnimation 0.5s forwards;
+        }
+        
+        @keyframes clickAnimation {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 1024px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .shop {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .currencies {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .event-banner {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">PIN TAP</div>
+            <div class="currencies">
+                <div class="currency">
+                    <div class="currency-icon">📍</div>
+                    <div class="currency-info">
+                        <h3>Булавки</h3>
+                        <div class="currency-value" id="pins">0</div>
+                    </div>
+                </div>
+                <div class="currency">
+                    <div class="currency-icon">⭐</div>
+                    <div class="currency-info">
+                        <h3>Звёзды</h3>
+                        <div class="currency-value" id="stars">0</div>
+                    </div>
+                </div>
+                <div class="currency">
+                    <div class="currency-icon">💎</div>
+                    <div class="currency-info">
+                        <h3>Гемы</h3>
+                        <div class="currency-value" id="gems">50</div>
+                    </div>
+                </div>
+                <div class="currency event-currency">
+                    <div class="currency-icon">🎄</div>
+                    <div class="currency-info">
+                        <h3>Елочки</h3>
+                        <div class="currency-value" id="trees">0</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="event-banner">
+            <div class="event-info">
+                <h2>Новогодний Ивент Pin Tap!</h2>
+                <p>Собирайте временную валюту 🎄 для покупки эксклюзивных улучшений!</p>
+                <p><i>Ивент закончится 4 января</i></p>
+            </div>
+            <div class="event-timer">
+                <div class="timer-title">До конца ивента:</div>
+                <div class="timer" id="event-timer">10:00:00</div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="clicker-area">
+                <h2 class="clicker-title">Кликни на персонажа!</h2>
+                
+                <div class="click-character" id="click-character">
+                    <img id="character-img" src="https://i.postimg.cc/FRRNQJ5N/IMG_5238.png" alt="Сквик">
+                </div>
+                
+                <div class="character-select">
+                    <div class="character-option active" data-character="squeak">
+                        <img src="https://i.postimg.cc/FRRNQJ5N/IMG_5238.png" alt="Сквик">
+                    </div>
+                    <div class="character-option" data-character="spike">
+                        <img src="https://i.postimg.cc/4ddsThk3/%D0%91%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F35_20250123094426.png" alt="Спайк">
+                    </div>
+                    <div class="character-option" data-character="kit">
+                        <img src="https://i.postimg.cc/pTTRtnbL/%D0%91%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F35_20250123095044.png" alt="Кит">
+                    </div>
+                    <div class="character-option" data-character="mangoboom">
+                        <img src="https://i.postimg.cc/LXX2MZK4/%D0%91%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F628_20250612175548.png" alt="Мангобум">
+                    </div>
+                </div>
+                
+                <div class="click-info">
+                    <div class="click-power">Сила клика: <span id="click-power">1</span> булавок</div>
+                    <div class="click-per-second">Булавок в секунду: <span id="per-second">0</span></div>
+                </div>
+            </div>
+            
+            <div class="shop">
+                <h2 class="shop-title">Магазин Pin Tap</h2>
+                <div class="tabs">
+                    <div class="tab active" data-tab="pins">За булавки</div>
+                    <div class="tab" data-tab="stars">За звёзды</div>
+                    <div class="tab" data-tab="gems">За гемы</div>
+                    <div class="tab" data-tab="event">Новогодний</div>
+                </div>
+                <div class="items-container" id="shop-items">
+                    <!-- Товары будут загружены через JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="achievements">
+            <h2 class="achievements-title">Достижения Pin Tap</h2>
+            <div id="achievements-list">
+                <!-- Достижения будут загружены через JavaScript -->
+            </div>
+        </div>
+        
+        <footer>
+            <p>Pin Tap - игра в стиле Brawl Stars © 2023. Все права защищены.</p>
+            <p>Игра подготовлена к полноценному выходу!</p>
+        </footer>
+    </div>
+    
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Игровые данные
+        const gameData = {
+            pins: 0,
+            stars: 0,
+            gems: 50,
+            trees: 0,
+            clickPower: 1,
+            perSecond: 0,
+            currentCharacter: 'squeak',
+            items: {
+                pins: [
+                    { id: 1, name: "Усиленный палец", description: "Увеличивает силу клика на 1", effect: "+1 к силе клика", price: 10, icon: "👆", owned: 0 },
+                    { id: 2, name: "Автокликер", description: "Автоматически кликает 1 раз в секунду", effect: "+1 к кликам в секунду", price: 50, icon: "🤖", owned: 0 },
+                    { id: 3, name: "Булавочный пресс", description: "Производит 5 булавок в секунду", effect: "+5 к кликам в секунду", price: 200, icon: "🏭", owned: 0 },
+                    { id: 4, name: "Булавочная фабрика", description: "Производит 10 булавок в секунду", effect: "+10 к кликам в секунду", price: 1000, icon: "🏢", owned: 0 }
+                ],
+                stars: [
+                    { id: 1, name: "Звездный бустер", description: "Увеличивает доход от кликов на 100%", effect: "x2 булавок за клик", price: 5, icon: "⭐", owned: 0 },
+                    { id: 2, name: "Галактический палец", description: "Увеличивает силу клика на 5", effect: "+5 к силе клика", price: 20, icon: "👽", owned: 0 },
+                    { id: 3, name: "Созвездие булавок", description: "Производит 20 булавок в секунду", effect: "+20 к кликам в секунду", price: 100, icon: "🌌", owned: 0 }
+                ],
+                gems: [
+                    { id: 1, name: "Булавочный вулкан", description: "Увеличивает силу клика на 20", effect: "+20 к силе клика", price: 10, icon: "🌋", owned: 0 },
+                    { id: 2, name: "Секретная технология", description: "Производит 100 булавок в секунду", effect: "+100 к кликам в секунду", price: 25, icon: "🔬", owned: 0 },
+                    { id: 3, name: "Легендарный палец", description: "Увеличивает доход от кликов на 500%", effect: "x6 булавок за клик", price: 50, icon: "👑", owned: 0 }
+                ],
+                event: [
+                    { id: 1, name: "Новогодний бустер", description: "Временный x3 к силе клика", effect: "x3 к силе клика на 1 час", price: 10, icon: "🎁", owned: 0 },
+                    { id: 2, name: "Снежный автокликер", description: "Производит 50 булавок в секунду", effect: "+50 к кликам в секунду", price: 25, icon: "❄️", owned: 0 },
+                    { id: 3, name: "Эльфийская помощь", description: "Временный x5 к доходу от кликов", effect: "x5 к доходу на 30 мин", price: 15, icon: "🧝", owned: 0 }
+                ]
+            },
+            achievements: [
+                { id: 1, name: "Первая булавка", description: "Собрать 1 булавку", reward: "10 звёзд", goal: 1, achieved: false, icon: "📍" },
+                { id: 2, name: "Булавочный магнат", description: "Собрать 100 булавок", reward: "50 звёзд", goal: 100, achieved: false, icon: "💰" },
+                { id: 3, name: "Звездный путь", description: "Собрать 10 звёзд", reward: "5 гемов", goal: 10, achieved: false, icon: "⭐" },
+                { id: 4, name: "Новогоднее настроение", description: "Собрать 50 елочек", reward: "Новогодний бустер", goal: 50, achieved: false, icon: "🎄" },
+                { id: 5, name: "Ветеран кликов", description: "Сделать 1000 кликов", reward: "100 звёзд", goal: 1000, achieved: false, icon: "👴" }
+            ],
+            clickCount: 0
+        };
+
+        // DOM элементы
+        const pinsElement = document.getElementById('pins');
+        const starsElement = document.getElementById('stars');
+        const gemsElement = document.getElementById('gems');
+        const treesElement = document.getElementById('trees');
+        const clickPowerElement = document.getElementById('click-power');
+        const perSecondElement = document.getElementById('per-second');
+        const clickCharacterElement = document.getElementById('click-character');
+        const characterImgElement = document.getElementById('character-img');
+        const shopItemsElement = document.getElementById('shop-items');
+        const achievementsListElement = document.getElementById('achievements-list');
+        const notificationElement = document.getElementById('notification');
+        const eventTimerElement = document.getElementById('event-timer');
+        const tabs = document.querySelectorAll('.tab');
+        const characterOptions = document.querySelectorAll('.character-option');
+
+        // Таймер новогоднего ивента (до 4 января)
+        function updateEventTimer() {
+            const now = new Date();
+            let eventEnd = new Date(now.getFullYear(), 0, 4); // 4 января текущего года
+            
+            // Если 4 января уже прошло в этом году, установим на следующий год
+            if (now > eventEnd) {
+                eventEnd = new Date(now.getFullYear() + 1, 0, 4);
+            }
+            
+            const timeLeft = eventEnd - now;
+            
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            eventTimerElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        // Показать уведомление
+        function showNotification(message, isError = false) {
+            notificationElement.textContent = message;
+            notificationElement.style.background = isError ? '#ff4444' : '#4CAF50';
+            notificationElement.classList.add('show');
+            
+            setTimeout(() => {
+                notificationElement.classList.remove('show');
+            }, 3000);
+        }
+
+        // Обновить отображение валют
+        function updateCurrencies() {
+            pinsElement.textContent = formatNumber(gameData.pins);
+            starsElement.textContent = formatNumber(gameData.stars);
+            gemsElement.textContent = formatNumber(gameData.gems);
+            treesElement.textContent = formatNumber(gameData.trees);
+            clickPowerElement.textContent = gameData.clickPower;
+            perSecondElement.textContent = gameData.perSecond;
+            
+            // Проверить достижения
+            checkAchievements();
+        }
+
+        // Форматирование чисел
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num;
+        }
+
+        // Загрузка товаров в магазин
+        function loadShopItems(tab) {
+            shopItemsElement.innerHTML = '';
+            const items = gameData.items[tab];
+            
+            items.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'item';
+                itemElement.innerHTML = `
+                    <div class="item-icon">${item.icon}</div>
+                    <div class="item-info">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-description">${item.description}</div>
+                        <div class="item-effect">${item.effect}</div>
+                        <div>Куплено: ${item.owned}</div>
+                    </div>
+                    <div class="item-price">
+                        <div class="price-amount">${item.price}</div>
+                        <div class="price-icon">${tab === 'pins' ? '📍' : tab === 'stars' ? '⭐' : tab === 'gems' ? '💎' : '🎄'}</div>
+                        <button class="buy-btn" data-id="${item.id}" data-tab="${tab}">Купить</button>
+                    </div>
+                `;
+                
+                // Проверка, достаточно ли валюты
+                const buyButton = itemElement.querySelector('.buy-btn');
+                const currency = tab === 'pins' ? gameData.pins : 
+                                tab === 'stars' ? gameData.stars : 
+                                tab === 'gems' ? gameData.gems : gameData.trees;
+                
+                if (currency < item.price) {
+                    buyButton.disabled = true;
+                }
+                
+                shopItemsElement.appendChild(itemElement);
+            });
+            
+            // Добавить обработчики для кнопок покупки
+            document.querySelectorAll('.buy-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const itemId = parseInt(this.getAttribute('data-id'));
+                    const tab = this.getAttribute('data-tab');
+                    buyItem(itemId, tab);
+                });
+            });
+        }
+
+        // Покупка предмета
+        function buyItem(itemId, tab) {
+            const items = gameData.items[tab];
+            const item = items.find(i => i.id === itemId);
+            
+            if (!item) return;
+            
+            // Проверка валюты
+            let currency;
+            switch(tab) {
+                case 'pins': currency = gameData.pins; break;
+                case 'stars': currency = gameData.stars; break;
+                case 'gems': currency = gameData.gems; break;
+                case 'event': currency = gameData.trees; break;
+            }
+            
+            if (currency < item.price) {
+                showNotification(`Недостаточно ${tab === 'pins' ? 'булавок' : tab === 'stars' ? 'звёзд' : tab === 'gems' ? 'гемов' : 'елочек'}!`, true);
+                return;
+            }
+            
+            // Списание валюты
+            switch(tab) {
+                case 'pins': gameData.pins -= item.price; break;
+                case 'stars': gameData.stars -= item.price; break;
+                case 'gems': gameData.gems -= item.price; break;
+                case 'event': gameData.trees -= item.price; break;
+            }
+            
+            // Применение эффекта
+            applyItemEffect(item, tab);
+            
+            // Увеличение цены для следующей покупки (увеличиваем на 50%)
+            item.price = Math.floor(item.price * 1.5);
+            item.owned++;
+            
+            // Обновление отображения
+            updateCurrencies();
+            loadShopItems(tab);
+            showNotification(`Вы купили "${item.name}"!`);
+        }
+
+        // Применение эффекта предмета
+        function applyItemEffect(item, tab) {
+            switch(item.id) {
+                case 1: // Усиленный палец
+                    gameData.clickPower += 1;
+                    break;
+                case 2: // Автокликер
+                    gameData.perSecond += 1;
+                    break;
+                case 3: // Булавочный пресс
+                    if (tab === 'pins') gameData.perSecond += 5;
+                    if (tab === 'event') gameData.perSecond += 50;
+                    break;
+                case 4: // Булавочная фабрика
+                    gameData.perSecond += 10;
+                    break;
+                case 5: // Звездный бустер
+                    // Временный эффект x2
+                    const originalClickPower = gameData.clickPower;
+                    gameData.clickPower *= 2;
+                    setTimeout(() => {
+                        gameData.clickPower = originalClickPower;
+                        updateCurrencies();
+                    }, 3600000); // 1 час
+                    break;
+                case 6: // Галактический палец
+                    gameData.clickPower += 5;
+                    break;
+                case 7: // Созвездие булавок
+                    gameData.perSecond += 20;
+                    break;
+                case 8: // Булавочный вулкан
+                    gameData.clickPower += 20;
+                    break;
+                case 9: // Секретная технология
+                    gameData.perSecond += 100;
+                    break;
+                case 10: // Легендарный палец
+                    // Временный эффект x6
+                    const originalClickPower2 = gameData.clickPower;
+                    gameData.clickPower *= 6;
+                    setTimeout(() => {
+                        gameData.clickPower = originalClickPower2;
+                        updateCurrencies();
+                    }, 1800000); // 30 минут
+                    break;
+                case 11: // Новогодний бустер
+                    // Временный эффект x3
+                    const originalClickPower3 = gameData.clickPower;
+                    gameData.clickPower *= 3;
+                    setTimeout(() => {
+                        gameData.clickPower = originalClickPower3;
+                        updateCurrencies();
+                    }, 3600000); // 1 час
+                    break;
+                case 12: // Снежный автокликер
+                    gameData.perSecond += 50;
+                    break;
+                case 13: // Эльфийская помощь
+                    // Временный эффект x5
+                    const originalClickPower4 = gameData.clickPower;
+                    gameData.clickPower *= 5;
+                    setTimeout(() => {
+                        gameData.clickPower = originalClickPower4;
+                        updateCurrencies();
+                    }, 1800000); // 30 минут
+                    break;
+            }
+        }
+
+        // Проверка достижений
+        function checkAchievements() {
+            achievementsListElement.innerHTML = '';
+            
+            gameData.achievements.forEach(achievement => {
+                let achieved = false;
+                
+                switch(achievement.id) {
+                    case 1: achieved = gameData.pins >= achievement.goal; break;
+                    case 2: achieved = gameData.pins >= achievement.goal; break;
+                    case 3: achieved = gameData.stars >= achievement.goal; break;
+                    case 4: achieved = gameData.trees >= achievement.goal; break;
+                    case 5: achieved = gameData.clickCount >= achievement.goal; break;
+                }
+                
+                if (achieved && !achievement.achieved) {
+                    achievement.achieved = true;
+                    // Награда за достижение
+                    if (achievement.id === 1) gameData.stars += 10;
+                    if (achievement.id === 2) gameData.stars += 50;
+                    if (achievement.id === 3) gameData.gems += 5;
+                    if (achievement.id === 5) gameData.stars += 100;
+                    
+                    showNotification(`Достижение получено: ${achievement.name}! Награда: ${achievement.reward}`);
+                    updateCurrencies();
+                }
+                
+                const achievementElement = document.createElement('div');
+                achievementElement.className = `achievement ${achieved ? '' : 'locked'}`;
+                achievementElement.innerHTML = `
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-info">
+                        <div class="achievement-name">${achievement.name}</div>
+                        <div class="achievement-desc">${achievement.description}</div>
+                    </div>
+                    <div class="achievement-reward">${achievement.reward}</div>
+                `;
+                
+                achievementsListElement.appendChild(achievementElement);
+            });
+        }
+
+        // Обработчик клика по персонажу
+        clickCharacterElement.addEventListener('click', function(e) {
+            // Добавление булавок
+            gameData.pins += gameData.clickPower;
+            gameData.clickCount++;
+            
+            // Шанс получить елку (10%)
+            if (Math.random() < 0.1) {
+                gameData.trees += 1;
+            }
+            
+            // Шанс получить звезду (5%)
+            if (Math.random() < 0.05) {
+                gameData.stars += 1;
+            }
+            
+            // Шанс получить гем (1%)
+            if (Math.random() < 0.01) {
+                gameData.gems += 1;
+            }
+            
+            // Создание эффекта клика
+            const clickEffect = document.createElement('div');
+            clickEffect.className = 'click-effect';
+            clickEffect.style.left = (e.offsetX - 25) + 'px';
+            clickEffect.style.top = (e.offsetY - 25) + 'px';
+            clickCharacterElement.appendChild(clickEffect);
+            
+            // Удаление эффекта после анимации
+            setTimeout(() => {
+                clickEffect.remove();
+            }, 500);
+            
+            // Обновление отображения
+            updateCurrencies();
+        });
+
+        // Автоматическое начисление булавок каждую секунду
+        setInterval(() => {
+            gameData.pins += gameData.perSecond;
+            updateCurrencies();
+        }, 1000);
+
+        // Обработчики вкладок магазина
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Убрать активный класс со всех вкладок
+                tabs.forEach(t => t.classList.remove('active'));
+                // Добавить активный класс текущей вкладке
+                this.classList.add('active');
+                // Загрузить товары для выбранной вкладки
+                loadShopItems(this.getAttribute('data-tab'));
+            });
+        });
+
+        // Обработчики выбора персонажа
+        characterOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Убрать активный класс со всех персонажей
+                characterOptions.forEach(o => o.classList.remove('active'));
+                // Добавить активный класс выбранному персонажу
+                this.classList.add('active');
+                
+                // Установить нового персонажа
+                const character = this.getAttribute('data-character');
+                gameData.currentCharacter = character;
+                
+                // Изменить изображение персонажа
+                let characterImage;
+                switch(character) {
+                    case 'squeak':
+                        characterImage = 'https://i.postimg.cc/FRRNQJ5N/IMG_5238.png';
+                        break;
+                    case 'spike':
+                        characterImage = 'https://i.postimg.cc/4ddsThk3/%D0%91%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F35_20250123094426.png';
+                        break;
+                    case 'kit':
+                        characterImage = 'https://i.postimg.cc/pTTRtnbL/%D0%91%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F35_20250123095044.png';
+                        break;
+                    case 'mangoboom':
+                        characterImage = 'https://i.postimg.cc/LXX2MZK4/%D0%91%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F628_20250612175548.png';
+                        break;
+                }
+                
+                characterImgElement.src = characterImage;
+                
+                // Немного увеличить силу клика при смене персонажа (бонус)
+                gameData.clickPower += 0.5;
+                showNotification(`Вы выбрали нового персонажа! Сила клика увеличена на 0.5!`);
+                updateCurrencies();
+            });
+        });
+
+        // Инициализация игры
+        function initGame() {
+            updateCurrencies();
+            loadShopItems('pins');
+            checkAchievements();
+            updateEventTimer();
+            
+            // Обновление таймера каждую секунду
+            setInterval(updateEventTimer, 1000);
+            
+            // Сохранение игры каждые 10 секунд
+            setInterval(saveGame, 10000);
+            
+            // Загрузка сохранённой игры
+            loadGame();
+        }
+
+        // Сохранение игры
+        function saveGame() {
+            localStorage.setItem('pinTapSave', JSON.stringify(gameData));
+        }
+
+        // Загрузка игры
+        function loadGame() {
+            const saved = localStorage.getItem('pinTapSave');
+            if (saved) {
+                const savedData = JSON.parse(saved);
+                Object.assign(gameData, savedData);
+                updateCurrencies();
+                loadShopItems('pins');
+                checkAchievements();
+                
+                // Восстановление выбранного персонажа
+                const characterOption = document.querySelector(`.character-option[data-character="${gameData.currentCharacter}"]`);
+                if (characterOption) {
+                    characterOptions.forEach(o => o.classList.remove('active'));
+                    characterOption.classList.add('active');
+                    
+                    let characterImage;
+                    switch(gameData.currentCharacter) {
+                        case 'squeak':
+                            characterImage = 'https://i.postimg.cc/FRRNQJ5N/IMG_5238.png';
+                            break;
+                        case 'spike':
+                            characterImage = 'https://i.postimg.cc/4ddsThk3/%D0%91%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F35_20250123094426.png';
+                            break;
+                        case 'kit':
+                            characterImage = 'https://i.postimg.cc/pTTRtnbL/%D0%91%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F35_20250123095044.png';
+                            break;
+                        case 'mangoboom':
+                            characterImage = 'https://i.postimg.cc/LXX2MZK4/%D0%91%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B7%D0%B2%D0%B0%D0%BD%D0%B8%D1%8F628_20250612175548.png';
+                            break;
+                    }
+                    
+                    characterImgElement.src = characterImage;
+                }
+                
+                showNotification('Игра загружена!');
+            }
+        }
+
+        // Запуск игры при загрузке страницы
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
