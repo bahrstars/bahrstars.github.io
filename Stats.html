@@ -124,6 +124,7 @@
             align-items: center;
             gap: 16px;
             margin: 30px 0;
+            text-align: center;
         }
 
         .loading-spinner {
@@ -135,6 +136,38 @@
         .loading-text {
             font-size: 15px;
             opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .frame-container {
+            display: none;
+            width: 100%;
+            height: 300px;
+            border: 2px solid var(--button-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .stats-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .frame-note {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 14px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px;
+            border-radius: 6px;
+            margin: 0 10px;
         }
 
         .error {
@@ -328,10 +361,6 @@
             border-radius: 4px;
         }
 
-        .hidden-frame {
-            display: none;
-        }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -378,6 +407,10 @@
         <div class="loading" id="loadingView">
             <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Loading.png" alt="Loading" class="loading-spinner">
             <p class="loading-text">Загрузка статистики...</p>
+            <div class="frame-container" id="frameContainer">
+                <iframe class="stats-frame" id="statsFrame"></iframe>
+                <div class="frame-note">Нажмите на страницу выше, чтобы загрузить профиль</div>
+            </div>
         </div>
         
         <div class="stats-container" id="statsView">
@@ -489,8 +522,6 @@
                 </div>
             </div>
         </div>
-        
-        <iframe class="hidden-frame" id="dataFrame"></iframe>
     </div>
 
     <script>
@@ -528,10 +559,19 @@
         const tagInput = document.getElementById('tagInput');
         const searchButton = document.getElementById('searchButton');
         const errorMessage = document.getElementById('errorMessage');
-        const dataFrame = document.getElementById('dataFrame');
+        const frameContainer = document.getElementById('frameContainer');
+        const statsFrame = document.getElementById('statsFrame');
         
         // Базовый URL для картинок
         const BASE_URL = 'https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/09cd4a3518aa87d1ed77fe818ba3eb91fa986954/GameFiles/Images';
+        
+        // Ключ для Local Storage
+        const STORAGE_KEY = 'PM_PROJECTSTORAGE_EXT_ProfileData';
+        
+        // Переменные для отслеживания состояния
+        let currentTag = '';
+        let storageCheckInterval = null;
+        let lastStorageValue = null;
         
         // Установка темы при загрузке
         setTelegramTheme();
@@ -567,112 +607,86 @@
                 return;
             }
             
+            currentTag = tag;
+            
+            // Очищаем предыдущие данные
+            clearInterval(storageCheckInterval);
+            lastStorageValue = null;
+            
+            // Очищаем Local Storage
+            localStorage.removeItem(STORAGE_KEY);
+            
             // Показываем загрузку
             searchView.style.display = 'none';
             loadingView.style.display = 'flex';
             errorMessage.style.display = 'none';
             statsView.style.display = 'none';
+            frameContainer.style.display = 'block';
             
-            // Создаем iframe для загрузки данных
+            // Загружаем iframe с нужным тегом
             const url = `https://bahrstars.github.io/Stats/opener?tag=${encodeURIComponent(tag)}`;
-            dataFrame.src = url;
+            statsFrame.src = url;
             
-            // Начинаем проверку IndexedDB
-            checkForProfileData(tag);
+            // Начинаем проверку Local Storage
+            startStorageCheck();
         }
         
-        // Функция проверки IndexedDB на наличие данных
-        function checkForProfileData(tag) {
-            let checkAttempts = 0;
-            const maxAttempts = 40; // 20 секунд (40 * 500ms)
+        // Функция начала проверки Local Storage
+        function startStorageCheck() {
+            // Проверяем текущее значение
+            lastStorageValue = localStorage.getItem(STORAGE_KEY);
             
-            const checkInterval = setInterval(() => {
-                checkAttempts++;
+            // Запускаем интервал проверки
+            storageCheckInterval = setInterval(() => {
+                const currentValue = localStorage.getItem(STORAGE_KEY);
                 
-                // Пытаемся открыть базу данных
-                const request = indexedDB.open('PinBrawlStat');
-                
-                request.onsuccess = function(event) {
-                    const db = event.target.result;
-                    
-                    // Проверяем, существует ли хранилище
-                    if (db.objectStoreNames.contains('ProfileData')) {
-                        const transaction = db.transaction(['ProfileData'], 'readonly');
-                        const store = transaction.objectStore('ProfileData');
-                        const getRequest = store.get('ProfileData');
+                // Если значение изменилось и не пустое
+                if (currentValue !== lastStorageValue && currentValue) {
+                    try {
+                        const profileData = JSON.parse(currentValue);
                         
-                        getRequest.onsuccess = function() {
-                            if (getRequest.result) {
-                                try {
-                                    const profileData = getRequest.result;
-                                    
-                                    // Проверяем, что это данные для нужного тега
-                                    if (profileData.Tag === tag || profileData.Tag === "#" + tag) {
-                                        clearInterval(checkInterval);
-                                        
-                                        // Убираем iframe
-                                        dataFrame.src = '';
-                                        
-                                        // Показываем статистику
-                                        displayStats(profileData);
-                                    } else if (checkAttempts >= maxAttempts) {
-                                        // Достигли максимального количества попыток
-                                        clearInterval(checkInterval);
-                                        showError('Профиль не найден или данные не загрузились');
-                                        searchView.style.display = 'block';
-                                        loadingView.style.display = 'none';
-                                    }
-                                } catch (e) {
-                                    console.error('Ошибка обработки данных:', e);
-                                }
-                            } else if (checkAttempts >= maxAttempts) {
-                                // Достигли максимального количества попыток
-                                clearInterval(checkInterval);
-                                showError('Не удалось загрузить статистику. Проверьте правильность тега.');
-                                searchView.style.display = 'block';
-                                loadingView.style.display = 'none';
-                            }
-                        };
-                        
-                        getRequest.onerror = function() {
-                            console.error('Ошибка чтения из IndexedDB');
-                            if (checkAttempts >= maxAttempts) {
-                                clearInterval(checkInterval);
-                                showError('Ошибка при чтении данных');
-                                searchView.style.display = 'block';
-                                loadingView.style.display = 'none';
-                            }
-                        };
-                    } else if (checkAttempts >= maxAttempts) {
-                        // Хранилище не существует
-                        clearInterval(checkInterval);
-                        showError('Хранилище данных не найдено');
-                        searchView.style.display = 'block';
-                        loadingView.style.display = 'none';
+                        // Проверяем, что это данные для нужного тега
+                        if (profileData.Tag === currentTag || profileData.Tag === "#" + currentTag) {
+                            // Данные получены, останавливаем проверку
+                            clearInterval(storageCheckInterval);
+                            
+                            // Скрываем iframe
+                            frameContainer.style.display = 'none';
+                            
+                            // Показываем статистику
+                            displayStats(profileData);
+                        } else {
+                            // Обновляем последнее значение, но продолжаем проверку
+                            lastStorageValue = currentValue;
+                        }
+                    } catch (e) {
+                        console.error('Ошибка парсинга данных из Local Storage:', e);
                     }
-                    
-                    db.close();
-                };
-                
-                request.onerror = function() {
-                    console.error('Ошибка открытия IndexedDB');
-                    if (checkAttempts >= maxAttempts) {
-                        clearInterval(checkInterval);
-                        showError('Ошибка доступа к данным');
-                        searchView.style.display = 'block';
-                        loadingView.style.display = 'none';
-                    }
-                };
-                
-                request.onupgradeneeded = function(event) {
-                    // База данных создана или обновлена
-                    const db = event.target.result;
-                    if (!db.objectStoreNames.contains('ProfileData')) {
-                        db.createObjectStore('ProfileData');
-                    }
-                };
-                
+                }
             }, 500); // Проверяем каждые 500ms
+            
+            // Таймаут через 30 секунд
+            setTimeout(() => {
+                if (storageCheckInterval) {
+                    clearInterval(storageCheckInterval);
+                    storageCheckInterval = null;
+                    
+                    // Проверяем, есть ли вообще какие-то данные
+                    const currentValue = localStorage.getItem(STORAGE_KEY);
+                    if (!currentValue) {
+                        showError('Не удалось загрузить профиль. Нажмите на страницу выше и попробуйте снова.');
+                    } else {
+                        try {
+                            const profileData = JSON.parse(currentValue);
+                            // Показываем данные даже если тег не совпадает
+                            frameContainer.style.display = 'none';
+                            displayStats(profileData);
+                        } catch (e) {
+                            showError('Ошибка загрузки данных. Попробуйте снова.');
+                        }
+                    }
+                }
+            }, 30000); // 30 секунд таймаут
         }
         
         // Функция отображения статистики
@@ -684,7 +698,11 @@
             
             // Заполняем данные профиля
             document.getElementById('playerName').textContent = data.N || 'Неизвестно';
-            document.getElementById('playerTag').textContent = data.Tag ? `#${data.Tag.replace(/^#/, '')}` : '#???';
+            
+            // Обрабатываем тег
+            let displayTag = data.Tag || currentTag || '???';
+            displayTag = displayTag.replace(/^#/, '');
+            document.getElementById('playerTag').textContent = `#${displayTag}`;
             
             // Форматируем дату регистрации
             if (data.RegDate) {
@@ -824,8 +842,22 @@
             errorMessage.textContent = message;
             errorMessage.style.display = 'block';
             loadingView.style.display = 'none';
+            frameContainer.style.display = 'none';
             searchView.style.display = 'block';
+            
+            // Очищаем интервал если он есть
+            if (storageCheckInterval) {
+                clearInterval(storageCheckInterval);
+                storageCheckInterval = null;
+            }
         }
+        
+        // Очистка при разгрузке страницы
+        window.addEventListener('beforeunload', function() {
+            if (storageCheckInterval) {
+                clearInterval(storageCheckInterval);
+            }
+        });
     </script>
 </body>
 </html>
