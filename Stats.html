@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pin Brawl Stats</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+            overflow-y: auto;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 360px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .app-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 4px;
+        }
+
+        .app-subtitle {
+            font-size: 14px;
+            color: #888;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .input-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .tag-input {
+            flex: 1;
+            padding: 14px 16px;
+            font-size: 16px;
+            border: 2px solid var(--separator-color);
+            border-radius: 12px;
+            background: var(--secondary-bg);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        .tag-input:focus {
+            border-color: var(--button-color);
+        }
+
+        .search-button {
+            background: var(--button-color);
+            color: white;
+            border: none;
+            padding: 0 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            min-width: 80px;
+        }
+
+        .search-button:active {
+            transform: scale(0.95);
+        }
+
+        .search-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .note {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .loading {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin: 30px 0;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            animation: spin 1.5s linear infinite;
+        }
+
+        .loading-text {
+            font-size: 15px;
+            opacity: 0.8;
+        }
+
+        .error {
+            color: #ef4444;
+            font-size: 14px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            background: rgba(239, 68, 68, 0.1);
+            display: none;
+            width: 100%;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .stats-container {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            background: var(--secondary-bg);
+            border-radius: 16px;
+        }
+
+        .profile-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--button-color);
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 4px;
+        }
+
+        .profile-tag {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .profile-date {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .stats-section {
+            background: var(--secondary-bg);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-value img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .brawlers-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .brawler-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px;
+            background: var(--bg-color);
+            border-radius: 12px;
+        }
+
+        .brawler-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .brawler-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-color);
+            text-align: center;
+        }
+
+        .brawler-trophies {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .current-brawler {
+            border: 2px solid var(--button-color);
+        }
+
+        .pins-grid, .icons-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .pin-icon, .profile-icon-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+        }
+
+        .current-icon {
+            border: 2px solid var(--button-color);
+        }
+
+        .win-rate {
+            height: 8px;
+            background: var(--separator-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .win-rate-fill {
+            height: 100%;
+            background: var(--button-color);
+            border-radius: 4px;
+        }
+
+        .hidden-frame {
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Telegram theme variables */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --secondary-bg: #f0f0f0;
+            --separator-color: #e5e5e5;
+            --button-color: #2481cc;
+        }
+
+        .theme-dark {
+            --bg-color: #1c1c1c;
+            --text-color: #ffffff;
+            --secondary-bg: #2d2d2d;
+            --separator-color: #3d3d3d;
+            --button-color: #3d8ecd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="mainHeader">
+            <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Logo.png" alt="Pin Brawl" class="logo">
+            <div class="app-title">Pin Brawl Stats</div>
+            <div class="app-subtitle">Статистика профиля</div>
+        </div>
+        
+        <div id="searchView">
+            <div class="input-section">
+                <div class="input-label">Введите игровой тег:</div>
+                <div class="input-wrapper">
+                    <input type="text" class="tag-input" id="tagInput" placeholder="#1 или 1" maxlength="10">
+                    <button class="search-button" id="searchButton">Поиск</button>
+                </div>
+                <div class="note">Введите тег без знака # или с ним</div>
+            </div>
+            <div class="error" id="errorMessage"></div>
+        </div>
+        
+        <div class="loading" id="loadingView">
+            <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/GameFiles/Other/Loading.png" alt="Loading" class="loading-spinner">
+            <p class="loading-text">Загрузка статистики...</p>
+        </div>
+        
+        <div class="stats-container" id="statsView">
+            <!-- Профиль -->
+            <div class="profile-header" id="profileHeader">
+                <img src="" alt="Иконка" class="profile-icon" id="profileIcon">
+                <div class="profile-info">
+                    <div class="profile-name" id="playerName">PIN TALK</div>
+                    <div class="profile-tag" id="playerTag">#1</div>
+                    <div class="profile-date" id="playerRegDate">Зарегистрирован: 24.12.2025</div>
+                </div>
+            </div>
+            
+            <!-- Основная статистика -->
+            <div class="stats-section">
+                <div class="section-title">
+                    <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/09cd4a3518aa87d1ed77fe818ba3eb91fa986954/GameFiles/Images/Icons/Trophy.svg" alt="Трофеи">
+                    Основная статистика
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Текущие трофеи</div>
+                        <div class="stat-value" id="currentTrophies">959</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Максимум трофеев</div>
+                        <div class="stat-value" id="maxTrophies">1255</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Сезонные трофеи</div>
+                        <div class="stat-value" id="seasonTrophies">243</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Всего боёв</div>
+                        <div class="stat-value" id="totalBattles">20</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Победы</div>
+                        <div class="stat-value" id="wins">11</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Процент побед</div>
+                        <div class="stat-value" id="winRate">55%</div>
+                    </div>
+                </div>
+                <div class="win-rate">
+                    <div class="win-rate-fill" id="winRateBar" style="width: 55%"></div>
+                </div>
+            </div>
+            
+            <!-- Валюта -->
+            <div class="stats-section">
+                <div class="section-title">
+                    <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/09cd4a3518aa87d1ed77fe818ba3eb91fa986954/GameFiles/Images/Icons/Gem.svg" alt="Валюта">
+                    Валюта
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Кристаллы</div>
+                        <div class="stat-value">
+                            <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/09cd4a3518aa87d1ed77fe818ba3eb91fa986954/GameFiles/Images/Icons/Gem.svg" alt="Кристаллы">
+                            <span id="gems">10814</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Монеты</div>
+                        <div class="stat-value">
+                            <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/09cd4a3518aa87d1ed77fe818ba3eb91fa986954/GameFiles/Images/Icons/Coin.svg" alt="Монеты">
+                            <span id="coins">24160</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Очки силы</div>
+                        <div class="stat-value" id="powerPoints">21335</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Бойцы -->
+            <div class="stats-section">
+                <div class="section-title">
+                    <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/09cd4a3518aa87d1ed77fe818ba3eb91fa986954/GameFiles/Images/Brawlers/Icons/IconКольт.svg" alt="Бойцы">
+                    Бойцы (<span id="brawlersCount">0</span>)
+                </div>
+                <div class="brawlers-grid" id="brawlersGrid">
+                    <!-- Бойцы будут добавлены динамически -->
+                </div>
+            </div>
+            
+            <!-- Значки -->
+            <div class="stats-section">
+                <div class="section-title">
+                    <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/09cd4a3518aa87d1ed77fe818ba3eb91fa986954/GameFiles/Images/Pins/Like_pin.svg" alt="Значки">
+                    Значки (<span id="pinsCount">0</span>)
+                </div>
+                <div class="pins-grid" id="pinsGrid">
+                    <!-- Значки будут добавлены динамически -->
+                </div>
+            </div>
+            
+            <!-- Иконки профиля -->
+            <div class="stats-section">
+                <div class="section-title">
+                    <img src="https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/09cd4a3518aa87d1ed77fe818ba3eb91fa986954/GameFiles/Images/Icons/BlackCat.svg" alt="Иконки">
+                    Иконки профиля (<span id="iconsCount">0</span>)
+                </div>
+                <div class="icons-grid" id="iconsGrid">
+                    <!-- Иконки будут добавлены динамически -->
+                </div>
+            </div>
+        </div>
+        
+        <iframe class="hidden-frame" id="dataFrame"></iframe>
+    </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        // Установка темы Telegram
+        function setTelegramTheme() {
+            const themeParams = tg.themeParams;
+            const isDark = tg.colorScheme === 'dark';
+            
+            document.body.style.backgroundColor = themeParams.bg_color || (isDark ? '#1c1c1c' : '#ffffff');
+            document.body.style.color = themeParams.text_color || (isDark ? '#ffffff' : '#000000');
+            
+            if (isDark) {
+                document.body.classList.add('theme-dark');
+            } else {
+                document.body.classList.remove('theme-dark');
+            }
+            
+            // Установка кастомных CSS переменных
+            const root = document.documentElement;
+            root.style.setProperty('--bg-color', themeParams.bg_color || (isDark ? '#1c1c1c' : '#ffffff'));
+            root.style.setProperty('--text-color', themeParams.text_color || (isDark ? '#ffffff' : '#000000'));
+            root.style.setProperty('--secondary-bg', themeParams.secondary_bg_color || (isDark ? '#2d2d2d' : '#f0f0f0'));
+            root.style.setProperty('--separator-color', themeParams.hint_color || (isDark ? '#3d3d3d' : '#e5e5e5'));
+            root.style.setProperty('--button-color', themeParams.button_color || (isDark ? '#3d8ecd' : '#2481cc'));
+        }
+        
+        // Элементы DOM
+        const searchView = document.getElementById('searchView');
+        const loadingView = document.getElementById('loadingView');
+        const statsView = document.getElementById('statsView');
+        const tagInput = document.getElementById('tagInput');
+        const searchButton = document.getElementById('searchButton');
+        const errorMessage = document.getElementById('errorMessage');
+        const dataFrame = document.getElementById('dataFrame');
+        
+        // Базовый URL для картинок
+        const BASE_URL = 'https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/09cd4a3518aa87d1ed77fe818ba3eb91fa986954/GameFiles/Images';
+        
+        // Установка темы при загрузке
+        setTelegramTheme();
+        tg.onEvent('themeChanged', setTelegramTheme);
+        
+        // Обработчик нажатия кнопки поиска
+        searchButton.addEventListener('click', searchStats);
+        tagInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchStats();
+        });
+        
+        // Функция поиска статистики
+        function searchStats() {
+            let tag = tagInput.value.trim();
+            
+            if (!tag) {
+                showError('Введите тег игрока');
+                return;
+            }
+            
+            // Убираем символ # если он есть
+            tag = tag.replace(/^#/, '');
+            
+            if (!/^\d+$/.test(tag)) {
+                showError('Тег должен содержать только цифры');
+                return;
+            }
+            
+            // Показываем загрузку
+            searchView.style.display = 'none';
+            loadingView.style.display = 'flex';
+            errorMessage.style.display = 'none';
+            statsView.style.display = 'none';
+            
+            // Создаем iframe для загрузки данных
+            const url = `https://bahrstars.github.io/Stats/opener?tag=${tag}`;
+            dataFrame.src = url;
+            
+            // Начинаем проверку IndexedDB
+            checkForProfileData(tag);
+        }
+        
+        // Функция проверки IndexedDB на наличие данных
+        function checkForProfileData(tag) {
+            const checkInterval = setInterval(() => {
+                const request = indexedDB.open('PinBrawlStat', 1);
+                
+                request.onsuccess = function(event) {
+                    const db = event.target.result;
+                    const transaction = db.transaction(['ProfileData'], 'readonly');
+                    const store = transaction.objectStore('ProfileData');
+                    const getRequest = store.get('ProfileData');
+                    
+                    getRequest.onsuccess = function() {
+                        if (getRequest.result) {
+                            clearInterval(checkInterval);
+                            
+                            try {
+                                const profileData = JSON.parse(getRequest.result);
+                                
+                                // Проверяем, что это данные для нужного тега
+                                if (profileData.Tag === tag) {
+                                    // Убираем iframe
+                                    dataFrame.src = '';
+                                    
+                                    // Показываем статистику
+                                    displayStats(profileData);
+                                } else {
+                                    // Продолжаем ждать
+                                }
+                            } catch (e) {
+                                console.error('Ошибка парсинга данных:', e);
+                            }
+                        }
+                    };
+                    
+                    getRequest.onerror = function() {
+                        console.error('Ошибка чтения из IndexedDB');
+                    };
+                };
+                
+                request.onerror = function() {
+                    console.error('Ошибка открытия IndexedDB');
+                };
+            }, 500); // Проверяем каждые 500ms
+            
+            // Таймаут через 10 секунд
+            setTimeout(() => {
+                clearInterval(checkInterval);
+                showError('Не удалось загрузить статистику. Проверьте правильность тега.');
+                searchView.style.display = 'block';
+                loadingView.style.display = 'none';
+            }, 10000);
+        }
+        
+        // Функция отображения статистики
+        function displayStats(data) {
+            // Скрываем загрузку
+            loadingView.style.display = 'none';
+            
+            // Заполняем данные профиля
+            document.getElementById('playerName').textContent = data.N || 'Неизвестно';
+            document.getElementById('playerTag').textContent = `#${data.Tag}`;
+            
+            // Форматируем дату регистрации
+            if (data.RegDate) {
+                const date = data.RegDate;
+                const regDate = `${date.day}.${date.month}.${date.year}`;
+                document.getElementById('playerRegDate').textContent = `Зарегистрирован: ${regDate}`;
+            }
+            
+            // Устанавливаем иконку профиля
+            const currentIcon = data.I?.CI;
+            if (currentIcon && currentIcon !== 'Standart') {
+                const iconUrl = `${BASE_URL}/Icons/${encodeURIComponent(currentIcon)}.svg`;
+                document.getElementById('profileIcon').src = iconUrl;
+            }
+            
+            // Основная статистика
+            document.getElementById('currentTrophies').textContent = data.Tr || '0';
+            document.getElementById('maxTrophies').textContent = data.MTr || '0';
+            document.getElementById('seasonTrophies').textContent = data.STr || '0';
+            
+            // Статистика боёв
+            const wins = parseInt(data.G?.WG || 0);
+            const losses = parseInt(data.G?.LG || 0);
+            const totalBattles = wins + losses;
+            const winRate = totalBattles > 0 ? Math.round((wins / totalBattles) * 100) : 0;
+            
+            document.getElementById('totalBattles').textContent = totalBattles;
+            document.getElementById('wins').textContent = wins;
+            document.getElementById('winRate').textContent = `${winRate}%`;
+            document.getElementById('winRateBar').style.width = `${winRate}%`;
+            
+            // Валюта
+            document.getElementById('gems').textContent = data.CV?.Gems || '0';
+            document.getElementById('coins').textContent = data.CV?.Coins || '0';
+            document.getElementById('powerPoints').textContent = data.CV?.['Power Points'] || '0';
+            
+            // Бойцы
+            const brawlers = data.Br || {};
+            const brawlersCount = Object.keys(brawlers).length;
+            document.getElementById('brawlersCount').textContent = brawlersCount;
+            
+            const brawlersGrid = document.getElementById('brawlersGrid');
+            brawlersGrid.innerHTML = '';
+            
+            Object.entries(brawlers).forEach(([brawlerName, brawlerData]) => {
+                const isCurrent = data.CB === brawlerName;
+                const skinName = brawlerData.CS || brawlerName;
+                
+                const brawlerCard = document.createElement('div');
+                brawlerCard.className = `brawler-card ${isCurrent ? 'current-brawler' : ''}`;
+                
+                // Иконка бойца (используем скин если есть)
+                const iconUrl = `${BASE_URL}/Brawlers/Icons/Icon${encodeURIComponent(skinName)}.svg`;
+                
+                brawlerCard.innerHTML = `
+                    <img src="${iconUrl}" alt="${brawlerName}" class="brawler-icon" onerror="this.src='${BASE_URL}/Brawlers/Icons/Icon${encodeURIComponent(brawlerName)}.svg'">
+                    <div class="brawler-name">${brawlerName}</div>
+                    <div class="brawler-trophies">${brawlerData.Tr || 0}</div>
+                `;
+                
+                brawlersGrid.appendChild(brawlerCard);
+            });
+            
+            // Значки
+            const pins = data.P?.AP || [];
+            const pinsCount = pins.filter(pin => pin && pin !== '').length;
+            document.getElementById('pinsCount').textContent = pinsCount;
+            
+            const pinsGrid = document.getElementById('pinsGrid');
+            pinsGrid.innerHTML = '';
+            
+            pins.forEach(pinName => {
+                if (!pinName || pinName === '') return;
+                
+                const pinImg = document.createElement('img');
+                pinImg.className = 'pin-icon';
+                pinImg.src = `${BASE_URL}/Pins/${encodeURIComponent(pinName)}_pin.svg`;
+                pinImg.alt = pinName;
+                pinImg.title = pinName;
+                
+                pinsGrid.appendChild(pinImg);
+            });
+            
+            // Иконки профиля
+            const icons = data.I?.OI || [];
+            const iconsCount = icons.filter(icon => icon && icon !== '' && icon !== 'Standart').length;
+            document.getElementById('iconsCount').textContent = iconsCount;
+            
+            const iconsGrid = document.getElementById('iconsGrid');
+            iconsGrid.innerHTML = '';
+            
+            icons.forEach(iconName => {
+                if (!iconName || iconName === '' || iconName === 'Standart') return;
+                
+                const isCurrent = iconName === currentIcon;
+                
+                const iconImg = document.createElement('img');
+                iconImg.className = `profile-icon-small ${isCurrent ? 'current-icon' : ''}`;
+                iconImg.src = `${BASE_URL}/Icons/${encodeURIComponent(iconName)}.svg`;
+                iconImg.alt = iconName;
+                iconImg.title = iconName + (isCurrent ? ' (текущая)' : '');
+                
+                iconsGrid.appendChild(iconImg);
+            });
+            
+            // Показываем статистику
+            statsView.style.display = 'flex';
+        }
+        
+        // Функция показа ошибки
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            loadingView.style.display = 'none';
+            searchView.style.display = 'block';
+        }
+        
+        // Обработчик ошибок загрузки картинок
+        document.addEventListener('error', function(e) {
+            if (e.target.tagName === 'IMG') {
+                // Заменяем сломанную картинку на заглушку
+                e.target.style.opacity = '0.5';
+            }
+        }, true);
+    </script>
+</body>
+</html>
