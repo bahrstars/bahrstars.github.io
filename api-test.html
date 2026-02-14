@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Brawl Stars API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .api-key-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .api-key-form {
+            display: flex;
+            gap: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .api-key-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .api-key-input:focus {
+            outline: none;
+            border-color: #6B73FF;
+        }
+
+        .save-btn {
+            padding: 12px 30px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .save-btn:hover {
+            background: #218838;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .endpoint-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid #e9ecef;
+        }
+
+        .endpoint-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .endpoint-header h2 {
+            color: #495057;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .method {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .method-get {
+            background: #61affe;
+            color: white;
+        }
+
+        .endpoint-url {
+            background: #e9ecef;
+            padding: 10px 15px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #495057;
+            margin: 10px 20px;
+            border-radius: 8px;
+        }
+
+        .endpoint-body {
+            padding: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #495057;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #6B73FF;
+        }
+
+        .test-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .test-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,13,255,0.3);
+        }
+
+        .test-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .response-section {
+            margin-top: 20px;
+            border-top: 2px solid #e9ecef;
+            padding-top: 20px;
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .response-header h3 {
+            color: #495057;
+            font-size: 1.1em;
+        }
+
+        .status-code {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-200 {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-400 {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-401 {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .response-body {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #6B73FF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .documentation-link {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .documentation-link a {
+            color: #6B73FF;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .documentation-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Brawl Stars API Тестер</h1>
+            <p>Интерактивный инструмент для тестирования API Brawl Stars</p>
+        </div>
+
+        <div class="api-key-section">
+            <div class="api-key-form">
+                <input type="text" class="api-key-input" id="apiKey" placeholder="Введите ваш API ключ" value="YOUR_API_KEY">
+                <button class="save-btn" onclick="saveApiKey()">Сохранить ключ</button>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">
+                <span class="status-badge status-inactive" id="apiKeyStatus">⚡ API ключ не сохранен</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Get Player Info -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <h2>
+                        <span class="method method-get">GET</span>
+                        Информация об игроке
+                    </h2>
+                </div>
+                <div class="endpoint-url">
+                    https://developer.brawlstars.com/api/v1/players/{player_id}
+                </div>
+                <div class="endpoint-body">
+                    <div class="input-group">
+                        <label>ID игрока:</label>
+                        <input type="text" id="playerId" placeholder="Например: 123456" value="123456">
+                    </div>
+                    <button class="test-btn" onclick="getPlayerInfo()" id="playerBtn">
+                        🔍 Получить информацию
+                    </button>
+                    
+                    <div class="response-section">
+                        <div class="response-header">
+                            <h3>Ответ:</h3>
+                            <span class="status-code" id="playerStatus"></span>
+                        </div>
+                        <div class="response-body" id="playerResponse">
+                            Нажмите кнопку для получения данных
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Get Match Results -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <h2>
+                        <span class="method method-get">GET</span>
+                        Результаты матчей
+                    </h2>
+                </div>
+                <div class="endpoint-url">
+                    https://developer.brawlstars.com/api/v1/matches/{player_id}
+                </div>
+                <div class="endpoint-body">
+                    <div class="input-group">
+                        <label>ID игрока:</label>
+                        <input type="text" id="matchPlayerId" placeholder="Например: 123456" value="123456">
+                    </div>
+                    <div class="input-group">
+                        <label>Количество матчей (необязательно):</label>
+                        <input type="number" id="matchLimit" placeholder="Макс: 50" value="10" min="1" max="50">
+                    </div>
+                    <button class="test-btn" onclick="getMatchResults()" id="matchBtn">
+                        🏆 Получить матчи
+                    </button>
+                    
+                    <div class="response-section">
+                        <div class="response-header">
+                            <h3>Ответ:</h3>
+                            <span class="status-code" id="matchStatus"></span>
+                        </div>
+                        <div class="response-body" id="matchResponse">
+                            Нажмите кнопку для получения данных
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Примеры запросов -->
+        <div style="padding: 20px; background: #f8f9fa; border-top: 2px solid #e9ecef;">
+            <h3 style="color: #495057; margin-bottom: 15px;">📋 Примеры ID игроков для тестирования:</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <span style="background: #e9ecef; padding: 5px 15px; border-radius: 20px; font-family: monospace;">#8U82U8L</span>
+                <span style="background: #e9ecef; padding: 5px 15px; border-radius: 20px; font-family: monospace;">#2LCPLV9G</span>
+                <span style="background: #e9ecef; padding: 5px 15px; border-radius: 20px; font-family: monospace;">#9Y8YV0V</span>
+            </div>
+            <p style="margin-top: 10px; color: #6c757d; font-size: 14px;">
+                ⚠️ Примечание: Для работы API необходимо получить действительный API ключ на 
+                <a href="#" style="color: #6B73FF;">портале разработчика Brawl Stars</a>
+            </p>
+        </div>
+
+        <div class="documentation-link">
+            <a href="#">📚 Полная документация Brawl Stars API</a>
+        </div>
+    </div>
+
+    <script>
+        // Состояние API ключа
+        let currentApiKey = localStorage.getItem('brawlStarsApiKey') || 'YOUR_API_KEY';
+        
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('apiKey').value = currentApiKey;
+            updateApiKeyStatus();
+        });
+
+        // Сохранение API ключа
+        function saveApiKey() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            if (apiKey) {
+                currentApiKey = apiKey;
+                localStorage.setItem('brawlStarsApiKey', apiKey);
+                updateApiKeyStatus();
+                showNotification('API ключ успешно сохранен!', 'success');
+            }
+        }
+
+        // Обновление статуса API ключа
+        function updateApiKeyStatus() {
+            const statusElement = document.getElementById('apiKeyStatus');
+            if (currentApiKey && currentApiKey !== 'YOUR_API_KEY') {
+                statusElement.textContent = '✅ API ключ активен';
+                statusElement.className = 'status-badge status-active';
+            } else {
+                statusElement.textContent = '⚠️ API ключ не сохранен';
+                statusElement.className = 'status-badge status-inactive';
+            }
+        }
+
+        // Получение информации об игроке
+        async function getPlayerInfo() {
+            const playerId = document.getElementById('playerId').value.trim();
+            const btn = document.getElementById('playerBtn');
+            const responseDiv = document.getElementById('playerResponse');
+            const statusSpan = document.getElementById('playerStatus');
+            
+            if (!validateInput(playerId, responseDiv, statusSpan)) return;
+            
+            // Показываем загрузку
+            const originalText = btn.textContent;
+            btn.innerHTML = '<span class="loading"></span> Загрузка...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch(`https://developer.brawlstars.com/api/v1/players/${playerId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentApiKey}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                await handleResponse(response, responseDiv, statusSpan);
+            } catch (error) {
+                responseDiv.textContent = JSON.stringify({
+                    error: 'Ошибка соединения с сервером',
+                    message: error.message
+                }, null, 2);
+                statusSpan.textContent = 'Ошибка сети';
+                statusSpan.className = 'status-code status-400';
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Получение результатов матчей
+        async function getMatchResults() {
+            const playerId = document.getElementById('matchPlayerId').value.trim();
+            const limit = document.getElementById('matchLimit').value;
+            const btn = document.getElementById('matchBtn');
+            const responseDiv = document.getElementById('matchResponse');
+            const statusSpan = document.getElementById('matchStatus');
+            
+            if (!validateInput(playerId, responseDiv, statusSpan)) return;
+            
+            // Показываем загрузку
+            const originalText = btn.textContent;
+            btn.innerHTML = '<span class="loading"></span> Загрузка...';
+            btn.disabled = true;
+            
+            try {
+                let url = `https://developer.brawlstars.com/api/v1/matches/${playerId}`;
+                if (limit) {
+                    url += `?limit=${limit}`;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentApiKey}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                await handleResponse(response, responseDiv, statusSpan);
+            } catch (error) {
+                responseDiv.textContent = JSON.stringify({
+                    error: 'Ошибка соединения с сервером',
+                    message: error.message
+                }, null, 2);
+                statusSpan.textContent = 'Ошибка сети';
+                statusSpan.className = 'status-code status-400';
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Валидация ввода
+        function validateInput(input, responseDiv, statusSpan) {
+            if (!input) {
+                responseDiv.textContent = JSON.stringify({
+                    error: 'Ошибка валидации',
+                    message: 'Пожалуйста, введите ID игрока'
+                }, null, 2);
+                statusSpan.textContent = '400 Bad Request';
+                statusSpan.className = 'status-code status-400';
+                return false;
+            }
+            
+            if (!currentApiKey || currentApiKey === 'YOUR_API_KEY') {
+                responseDiv.textContent = JSON.stringify({
+                    error: 'Ошибка авторизации',
+                    message: 'Пожалуйста, сохраните действительный API ключ'
+                }, null, 2);
+                statusSpan.textContent = '401 Unauthorized';
+                statusSpan.className = 'status-code status-401';
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Обработка ответа от сервера
+        async function handleResponse(response, responseDiv, statusSpan) {
+            const data = await response.json();
+            
+            // Форматируем JSON для отображения
+            responseDiv.textContent = JSON.stringify(data, null, 2);
+            
+            // Устанавливаем статус код
+            statusSpan.textContent = `${response.status} ${response.statusText}`;
+            
+            if (response.ok) {
+                statusSpan.className = 'status-code status-200';
+            } else if (response.status === 401) {
+                statusSpan.className = 'status-code status-401';
+            } else {
+                statusSpan.className = 'status-code status-400';
+            }
+        }
+
+        // Показ уведомления
+        function showNotification(message, type) {
+            // Простое уведомление через alert, можно заменить на более красивое решение
+            alert(message);
+        }
+
+        // Добавляем обработку Enter в полях ввода
+        document.getElementById('playerId').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                getPlayerInfo();
+            }
+        });
+
+        document.getElementById('matchPlayerId').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                getMatchResults();
+            }
+        });
+    </script>
+</body>
+</html>
