@@ -2,9 +2,10 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Brawl Stars — Новости</title>
   <style>
+    /* Подключение шрифта */
     @font-face {
       font-family: "Lilita One";
       src: url('data:application/font-ttf;charset=utf-8;base64,<base64_encoded_font>') format('truetype');
@@ -16,8 +17,6 @@
       box-sizing: border-box; 
       margin: 0; 
       padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      -webkit-touch-callout: none;
     }
 
     body {
@@ -30,12 +29,6 @@
       overflow: hidden;
       display: flex;
       align-items: center;
-      padding: 0;
-      margin: 0;
-      position: fixed;
-      width: 100%;
-      top: 0;
-      left: 0;
     }
 
     .wrap {
@@ -44,39 +37,35 @@
       margin: 0 auto;
       padding: 10px;
       display: grid;
-      grid-template-columns: 1.8fr 1fr;
+      grid-template-columns: 1.8fr 1fr; /* Баннер шире, новости уже */
       gap: 15px;
-      height: 100vh;
+      height: calc(100vh - 20px);
       align-content: center;
     }
 
     /* ЛЕВАЯ ЧАСТЬ - БАННЕРЫ */
     .banner-section {
       width: 100%;
-      border-radius: 16px;
+      border-radius: 12px;
       overflow: hidden;
       background: transparent;
-      display: flex;
-      flex-direction: column;
       height: fit-content;
     }
 
     .carousel-container {
       position: relative;
       width: 100%;
-      border-radius: 16px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
       user-select: none;
       touch-action: pan-y pinch-zoom;
-      -webkit-user-select: none;
     }
 
     .carousel-track {
       display: flex;
-      transition: transform 0.2s ease-out;
+      transition: transform 0.3s ease-out;
       cursor: grab;
-      will-change: transform;
     }
 
     .carousel-track.dragging {
@@ -87,10 +76,8 @@
     .banner-slide {
       flex: 0 0 100%;
       aspect-ratio: 16 / 9;
-      background: linear-gradient(145deg, #1a2e55, #0f1f3a);
+      background: #1a2e55;
       position: relative;
-      border-radius: 16px;
-      overflow: hidden;
     }
 
     .banner-slide img {
@@ -99,75 +86,51 @@
       object-fit: cover;
       display: block;
       pointer-events: none;
-      -webkit-user-select: none;
-      user-select: none;
     }
 
     .banner-buttons {
       position: absolute;
-      bottom: 20px;
+      bottom: 15px;
       left: 0;
       right: 0;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 15px;
-      padding: 12px 20px;
-      background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+      gap: 12px;
+      padding: 8px 12px;
+      background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, transparent 100%);
       pointer-events: none;
-      z-index: 10;
-      /* Поднимаем выше от низа для безопасной зоны */
-      padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
     }
 
     .banner-btn {
       pointer-events: auto;
       background: linear-gradient(180deg, #ffd83a, #ffc400);
       border: none;
-      padding: 12px 24px;
-      border-radius: 40px;
+      padding: 8px 20px;
+      border-radius: 30px;
       font-family: "Lilita One", Arial, sans-serif;
-      font-size: 18px;
+      font-size: 16px;
       color: #111;
       font-weight: 800;
-      box-shadow: 0 5px 0 #b07d00, 0 4px 12px rgba(0,0,0,0.4);
-      transition: all 0.05s ease;
+      box-shadow: 0 4px 0 #b07d00, 0 4px 10px rgba(0,0,0,0.3);
+      transition: 0.1s ease;
       cursor: pointer;
       text-decoration: none;
       display: inline-block;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      border: 2px solid #ffe770;
-      min-width: 120px;
-      text-align: center;
-      -webkit-appearance: none;
-      appearance: none;
-      touch-action: manipulation;
-      /* Увеличиваем область касания */
-      position: relative;
-    }
-
-    .banner-btn::after {
-      content: '';
-      position: absolute;
-      top: -10px;
-      left: -10px;
-      right: -10px;
-      bottom: -10px;
-      background: transparent;
     }
 
     .banner-btn:active {
-      transform: translateY(4px);
-      box-shadow: 0 1px 0 #b07d00, 0 4px 12px rgba(0,0,0,0.4);
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #b07d00, 0 4px 10px rgba(0,0,0,0.3);
     }
 
     .carousel-dots {
       display: flex;
       justify-content: center;
-      gap: 12px;
-      margin-top: 15px;
-      min-height: 24px;
+      gap: 10px;
+      margin-top: 12px;
     }
 
     .dot {
@@ -176,69 +139,45 @@
       border-radius: 10px;
       background: #33557a;
       border: 2px solid transparent;
-      transition: all 0.2s;
+      transition: 0.2s;
       cursor: pointer;
       padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      /* Увеличиваем область нажатия */
-      position: relative;
-    }
-
-    .dot::after {
-      content: '';
-      position: absolute;
-      top: -8px;
-      left: -8px;
-      right: -8px;
-      bottom: -8px;
-      background: transparent;
     }
 
     .dot.active {
       background: #ffd83a;
       width: 30px;
       border-color: #ffc800;
-      box-shadow: 0 0 12px #ffaa00;
+      box-shadow: 0 0 8px #ffaa00;
     }
 
-    /* ПРАВАЯ ЧАСТЬ - НОВОСТИ */
+    /* ПРАВАЯ ЧАСТЬ - НОВОСТИ (без прокрутки) */
     .news-container {
       width: 100%;
       display: flex;
       flex-direction: column;
       gap: 15px;
       height: 100%;
-      overflow-y: auto;
-      overflow-x: hidden;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
-      padding-right: 2px;
-      touch-action: pan-y pinch-zoom;
-    }
-
-    .news-container::-webkit-scrollbar {
-      display: none;
+      overflow-y: visible;
     }
 
     .news-item {
       background: linear-gradient(180deg, #0a1835 0%, #08122a 100%);
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
       border: 2px solid rgba(74, 119, 189, 0.3);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
       cursor: pointer;
       overflow: hidden;
-      border-radius: 16px;
-      animation: fadeIn 0.4s ease forwards;
+      border-radius: 12px;
+      animation: fadeIn 0.5s ease forwards;
       opacity: 0;
       flex-shrink: 0;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
     }
 
-    .news-item:active {
-      transform: scale(0.98);
-      opacity: 0.9;
+    .news-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+      border-color: rgba(74, 119, 189, 0.6);
     }
 
     .news-banner-container {
@@ -253,7 +192,6 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      pointer-events: none;
     }
 
     .new-badge {
@@ -262,13 +200,12 @@
       right: 12px;
       background: linear-gradient(180deg, #ffd83a, #ffc400);
       color: #111;
-      padding: 6px 12px;
-      font-size: 13px;
+      padding: 5px 10px;
+      font-size: 12px;
       font-weight: 800;
-      box-shadow: 0 4px 0 #b07d00;
+      box-shadow: 0 3px 0 #b07d00;
       z-index: 2;
-      border-radius: 6px;
-      letter-spacing: 0.5px;
+      border-radius: 4px;
     }
 
     .news-content {
@@ -277,7 +214,7 @@
 
     .news-date {
       color: #9bdcff;
-      font-size: 13px;
+      font-size: 12px;
       margin-bottom: 6px;
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -288,7 +225,6 @@
       color: #ffffff;
       margin: 0;
       line-height: 1.3;
-      word-break: break-word;
     }
 
     .loading, .error-message {
@@ -296,54 +232,57 @@
       padding: 30px;
       text-align: center;
       border: 2px solid rgba(74, 119, 189, 0.3);
-      border-radius: 16px;
-      font-size: 16px;
+      border-radius: 12px;
+      width: 100%;
     }
 
-    .loading { color: #9bdcff; }
-    .error-message { color: #ff7a7a; }
+    .loading {
+      color: #9bdcff;
+    }
+
+    .error-message {
+      color: #ff4655;
+    }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
+      from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .news-item:nth-child(1) { animation-delay: 0.05s; }
-    .news-item:nth-child(2) { animation-delay: 0.1s; }
-    .news-item:nth-child(3) { animation-delay: 0.15s; }
-    .news-item:nth-child(4) { animation-delay: 0.2s; }
-    .news-item:nth-child(5) { animation-delay: 0.25s; }
+    .news-item:nth-child(1) { animation-delay: 0.1s; }
+    .news-item:nth-child(2) { animation-delay: 0.2s; }
+    .news-item:nth-child(3) { animation-delay: 0.3s; }
+    .news-item:nth-child(4) { animation-delay: 0.4s; }
+    .news-item:nth-child(5) { animation-delay: 0.5s; }
 
+    /* Мобильная адаптация */
     @media (max-width: 768px) {
       body {
-        position: relative;
-        height: 100vh;
+        height: auto;
+        overflow: auto;
+        align-items: flex-start;
       }
+      
       .wrap {
         grid-template-columns: 1fr;
-        height: 100vh;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      .news-container {
-        max-height: none;
+        gap: 15px;
+        padding: 10px;
         height: auto;
       }
-      .banner-btn {
-        padding: 10px 20px;
-        font-size: 16px;
-        min-width: 100px;
+      
+      .banner-slide {
+        aspect-ratio: 16/9;
       }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <!-- ЛЕВАЯ ЧАСТЬ: Баннеры -->
+    <!-- ЛЕВАЯ ЧАСТЬ: Карусель баннеров -->
     <div class="banner-section">
       <div class="carousel-container" id="carouselContainer">
         <div class="carousel-track" id="carouselTrack">
-          <div class="loading" style="padding:60px;">Загрузка баннеров...</div>
+          <div class="loading" style="width:100%; padding:60px;">Загрузка баннеров...</div>
         </div>
       </div>
       <div class="carousel-dots" id="carouselDots"></div>
@@ -357,355 +296,277 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // ========== НОВОСТИ ==========
+      // ========== ЗАГРУЗКА НОВОСТЕЙ ==========
       function loadNews() {
         fetch('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/NewsIDs')
-          .then(response => response.json())
+          .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+          })
           .then(newsIDs => {
             const newsContainer = document.getElementById('news-container');
             newsContainer.innerHTML = '';
             
-            if (!newsIDs?.length) {
+            if (!newsIDs || newsIDs.length === 0) {
               newsContainer.innerHTML = '<div class="error-message">Новости отсутствуют</div>';
               return;
             }
             
             Promise.all(newsIDs.reverse().map((newsID, index) => {
               return fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/News${newsID}Data`)
-                .then(res => res.json())
+                .then(response => {
+                  if (!response.ok) throw new Error(`Failed to load news ${newsID}`);
+                  return response.json();
+                })
                 .then(newsData => {
-                  const item = document.createElement('div');
-                  item.className = 'news-item';
-                  item.innerHTML = `
+                  const newsItem = document.createElement('div');
+                  newsItem.className = 'news-item';
+                  
+                  const date = newsData.Data || newsData.Date || 'Без даты';
+                  const isNew = index === 0;
+                  
+                  newsItem.innerHTML = `
                     <div class="news-banner-container">
                       <img src="${newsData.Banner || 'https://via.placeholder.com/600x300/1a3e8c/ffffff?text=Brawl+Stars'}" 
-                           class="news-banner" 
-                           loading="lazy"
+                           class="news-banner" alt="Баннер новости" 
                            onerror="this.src='https://via.placeholder.com/600x300/1a3e8c/ffffff?text=Brawl+Stars'">
-                      ${index === 0 ? '<div class="new-badge">НОВОЕ</div>' : ''}
+                      ${isNew ? '<div class="new-badge">НОВОЕ</div>' : ''}
                     </div>
                     <div class="news-content">
-                      <div class="news-date">${newsData.Data || newsData.Date || 'Без даты'}</div>
+                      <div class="news-date">${date}</div>
                       <div class="news-title">${newsData.Name || 'Без названия'}</div>
                     </div>
                   `;
                   
-                  // Улучшенная обработка клика для мобильных
-                  item.addEventListener('click', (e) => {
-                    e.stopPropagation();
+                  newsItem.addEventListener('click', () => {
                     window.location.href = `https://bahrstars.github.io/NewsPage.html?id=${newsID}`;
                   });
                   
-                  // Для touch устройств
-                  item.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                  }, { passive: false });
-                  
-                  return item;
+                  return newsItem;
                 })
-                .catch(() => null);
+                .catch(error => {
+                  console.error(`Error loading news ${newsID}:`, error);
+                  return null;
+                });
             })).then(items => {
-              items.filter(i => i).forEach(i => newsContainer.appendChild(i));
+              items.filter(item => item !== null).forEach(item => {
+                newsContainer.appendChild(item);
+              });
+              
               if (newsContainer.children.length === 0) {
                 newsContainer.innerHTML = '<div class="error-message">Не удалось загрузить новости</div>';
               }
             });
           })
-          .catch(() => {
-            document.getElementById('news-container').innerHTML = '<div class="error-message">Ошибка загрузки новостей</div>';
+          .catch(error => {
+            console.error('Error loading news:', error);
+            document.getElementById('news-container').innerHTML = 
+              '<div class="error-message">Ошибка загрузки новостей. Пожалуйста, попробуйте позже.</div>';
           });
       }
 
-      // ========== БАННЕРЫ ==========
-      async function loadBanners() {
+      // ========== ЗАГРУЗКА БАННЕРОВ ==========
+      function loadBanners() {
         const track = document.getElementById('carouselTrack');
         const dotsContainer = document.getElementById('carouselDots');
         
-        try {
-          const idsResponse = await fetch('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/News/Banner/BannersIDs');
-          const bannerIds = await idsResponse.json();
-          
-          if (!Array.isArray(bannerIds) || bannerIds.length === 0) {
-            track.innerHTML = '<div class="error-message">Нет баннеров</div>';
-            return;
-          }
-
-          const banners = [];
-          
-          for (const id of bannerIds) {
-            try {
-              const res = await fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/News/Banner/Banner${id}Data`);
-              const text = await res.text(); // Получаем как текст
-              
-              // Пытаемся исправить JSON (удаляем лишние запятые)
-              let fixedText = text
-                .replace(/,(\s*[}\]])/g, '$1') // Удаляем запятые перед } или ]
-                .replace(/\}\s*,(\s*\})/g, '} $1'); // Еще один вариант
-              
-              try {
-                const data = JSON.parse(fixedText);
-                if (data && data.Banner) {
-                  banners.push(data);
-                }
-              } catch (e) {
-                console.warn(`Баннер ${id} не удалось распарсить даже после исправления`);
-              }
-            } catch (e) {
-              console.warn(`Ошибка загрузки баннера ${id}`);
+        track.innerHTML = '<div class="loading" style="width:100%; padding:60px;">Загрузка баннеров...</div>';
+        
+        fetch('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/News/Banner/BannersIDs')
+          .then(response => {
+            if (!response.ok) throw new Error('Failed to load banner IDs');
+            return response.json();
+          })
+          .then(bannerIds => {
+            console.log('Banner IDs:', bannerIds); // Отладка
+            
+            if (!bannerIds || !Array.isArray(bannerIds) || bannerIds.length === 0) {
+              track.innerHTML = '<div class="error-message">Нет баннеров</div>';
+              return;
             }
-          }
-          
-          if (banners.length === 0) {
-            track.innerHTML = '<div class="error-message">Не удалось загрузить баннеры</div>';
-            return;
-          }
-
-          // Отрисовка
-          track.innerHTML = '';
-          
-          banners.forEach((banner, idx) => {
-            const slide = document.createElement('div');
-            slide.className = 'banner-slide';
             
-            const img = document.createElement('img');
-            img.src = banner.Banner;
-            img.alt = `Баннер ${idx + 1}`;
-            img.loading = 'lazy';
-            img.onerror = function() {
-              this.src = 'https://via.placeholder.com/800x450/1a3e8c/ffffff?text=Баннер';
-            };
-            
-            const buttonsDiv = document.createElement('div');
-            buttonsDiv.className = 'banner-buttons';
-            
-            // Добавляем кнопки
-            Object.keys(banner).forEach(key => {
-              if (key.startsWith('Button') && banner[key]?.Text && banner[key]?.Link) {
-                const btn = document.createElement('a');
-                btn.href = banner[key].Link;
-                btn.target = '_blank';
-                btn.rel = 'noopener noreferrer';
-                btn.className = 'banner-btn';
-                btn.textContent = banner[key].Text;
+            Promise.all(bannerIds.map(id => 
+              fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/News/Banner/Banner${id}Data`)
+                .then(res => {
+                  if (!res.ok) throw new Error(`Failed to load banner ${id}`);
+                  return res.json();
+                })
+                .catch(err => {
+                  console.error(`Error loading banner ${id}:`, err);
+                  return null;
+                })
+            )).then(bannersData => {
+              const validBanners = bannersData.filter(b => b && b.Banner);
+              console.log('Valid banners:', validBanners); // Отладка
+              
+              if (validBanners.length === 0) {
+                track.innerHTML = '<div class="error-message">Не удалось загрузить баннеры</div>';
+                return;
+              }
+              
+              track.innerHTML = '';
+              
+              validBanners.forEach((banner) => {
+                const slide = document.createElement('div');
+                slide.className = 'banner-slide';
                 
-                // Улучшенная обработка касания для мобильных
-                btn.addEventListener('touchstart', (e) => {
-                  e.stopPropagation();
-                }, { passive: false });
+                const img = document.createElement('img');
+                img.src = banner.Banner;
+                img.alt = 'Баннер';
+                img.onerror = function() {
+                  this.src = 'https://via.placeholder.com/800x450/1a3e8c/ffffff?text=Banner+Error';
+                };
                 
-                btn.addEventListener('click', (e) => {
-                  e.stopPropagation();
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.className = 'banner-buttons';
+                
+                Object.keys(banner).forEach(key => {
+                  if (key.startsWith('Button') && banner[key] && typeof banner[key] === 'object') {
+                    const btnData = banner[key];
+                    if (btnData.Text && btnData.Link) {
+                      const btn = document.createElement('a');
+                      btn.href = btnData.Link;
+                      btn.target = '_blank';
+                      btn.rel = 'noopener noreferrer';
+                      btn.className = 'banner-btn';
+                      btn.textContent = btnData.Text;
+                      btn.onclick = (e) => e.stopPropagation();
+                      buttonsDiv.appendChild(btn);
+                    }
+                  }
                 });
                 
-                buttonsDiv.appendChild(btn);
-              }
-            });
-            
-            slide.appendChild(img);
-            slide.appendChild(buttonsDiv);
-            track.appendChild(slide);
-          });
-
-          // Точки навигации
-          dotsContainer.innerHTML = '';
-          if (banners.length > 1) {
-            banners.forEach((_, i) => {
-              const dot = document.createElement('span');
-              dot.className = 'dot';
-              if (i === 0) dot.classList.add('active');
-              
-              dot.addEventListener('click', (e) => {
-                e.stopPropagation();
-                goToSlide(i);
+                slide.appendChild(img);
+                slide.appendChild(buttonsDiv);
+                track.appendChild(slide);
               });
               
-              dot.addEventListener('touchstart', (e) => {
-                e.stopPropagation();
-              }, { passive: false });
+              // Создаем dots ТОЛЬКО если больше 1 баннера
+              dotsContainer.innerHTML = '';
+              if (validBanners.length > 1) {
+                validBanners.forEach((_, i) => {
+                  const dot = document.createElement('span');
+                  dot.className = 'dot';
+                  if (i === 0) dot.classList.add('active');
+                  dot.addEventListener('click', () => {
+                    goToSlide(i);
+                  });
+                  dotsContainer.appendChild(dot);
+                });
+              } else {
+                dotsContainer.style.display = 'none';
+              }
               
-              dotsContainer.appendChild(dot);
+              // Инициализируем карусель
+              initCarousel(validBanners.length);
             });
-          } else {
-            dotsContainer.style.display = 'none';
-          }
-
-          initCarousel(banners.length);
-
-        } catch (error) {
-          track.innerHTML = '<div class="error-message">Ошибка загрузки баннеров</div>';
-        }
+          })
+          .catch(error => {
+            console.error('Banner loading error:', error);
+            track.innerHTML = '<div class="error-message">Ошибка загрузки баннеров</div>';
+          });
       }
 
-      // ========== КАРУСЕЛЬ С УЛУЧШЕННЫМ TOUCH ==========
+      // ========== КАРУСЕЛЬ ==========
       let currentIndex = 0;
       let slideCount = 0;
-      let startX, startY, isDragging = false;
-      let trackEl, containerEl;
-      let touchStartTime;
-      const MIN_SWIPE_DISTANCE = 30;
-      const MAX_SWIPE_TIME = 300;
-
+      let startX, isDragging = false;
+      let trackElement, containerElement;
+      
       function initCarousel(count) {
         slideCount = count;
-        trackEl = document.getElementById('carouselTrack');
-        containerEl = document.getElementById('carouselContainer');
+        trackElement = document.getElementById('carouselTrack');
+        containerElement = document.getElementById('carouselContainer');
         
-        if (slideCount <= 1) return;
+        if (slideCount <= 1) {
+          return; // Не инициализируем свайп для одного баннера
+        }
         
         updateSlideWidth();
         
-        // Улучшенная обработка touch событий
-        trackEl.addEventListener('touchstart', handleTouchStart, { passive: false });
-        trackEl.addEventListener('touchmove', handleTouchMove, { passive: false });
-        trackEl.addEventListener('touchend', handleTouchEnd);
-        trackEl.addEventListener('touchcancel', handleTouchEnd);
-        
-        // Мышь для отладки
-        trackEl.addEventListener('mousedown', handleMouseDown);
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
-        
+        trackElement.addEventListener('mousedown', dragStart);
+        trackElement.addEventListener('touchstart', dragStart, { passive: false });
+        window.addEventListener('mousemove', dragMove);
+        window.addEventListener('touchmove', dragMove, { passive: false });
+        window.addEventListener('mouseup', dragEnd);
+        window.addEventListener('touchend', dragEnd);
         window.addEventListener('resize', updateSlideWidth);
       }
-
-      function handleTouchStart(e) {
-        if (slideCount <= 1) return;
-        e.preventDefault();
-        const touch = e.touches[0];
-        startX = touch.clientX;
-        startY = touch.clientY;
-        isDragging = true;
-        touchStartTime = Date.now();
-        trackEl.classList.add('dragging');
-        trackEl.style.transition = 'none';
-      }
-
-      function handleTouchMove(e) {
-        if (!isDragging || slideCount <= 1) return;
-        e.preventDefault();
-        
-        const touch = e.touches[0];
-        const diffX = touch.clientX - startX;
-        const diffY = Math.abs(touch.clientY - startY);
-        
-        // Если скроллим по вертикали слишком сильно - не мешаем
-        if (diffY > 20 && Math.abs(diffX) < 10) {
-          isDragging = false;
-          trackEl.classList.remove('dragging');
-          return;
-        }
-        
-        const w = containerEl.offsetWidth;
-        let newX = -currentIndex * w + diffX;
-        
-        // Резинка
-        if (currentIndex === 0 && diffX > 0) {
-          newX = diffX * 0.2;
-        } else if (currentIndex === slideCount - 1 && diffX < 0) {
-          newX = -currentIndex * w + diffX * 0.2;
-        }
-        
-        trackEl.style.transform = `translateX(${newX}px)`;
-      }
-
-      function handleTouchEnd(e) {
-        if (!isDragging || slideCount <= 1) return;
-        e.preventDefault();
-        
-        const touchEndTime = Date.now();
-        const swipeTime = touchEndTime - touchStartTime;
-        
-        const w = containerEl.offsetWidth;
-        const transform = trackEl.style.transform;
-        const match = transform.match(/translateX\(([-\d.]+)px\)/);
-        
-        if (match) {
-          const currentX = parseFloat(match[1]);
-          const diffX = -currentX - currentIndex * w;
-          
-          // Определяем, был ли это свайп
-          if (Math.abs(diffX) > MIN_SWIPE_DISTANCE && swipeTime < MAX_SWIPE_TIME) {
-            if (diffX > 0 && currentIndex > 0) {
-              currentIndex--;
-            } else if (diffX < 0 && currentIndex < slideCount - 1) {
-              currentIndex++;
-            }
-          }
-          
-          // Плавно переходим к нужному слайду
-          goToSlide(currentIndex, true);
-        }
-        
-        isDragging = false;
-        trackEl.classList.remove('dragging');
-      }
-
-      function handleMouseDown(e) {
-        if (slideCount <= 1) return;
-        e.preventDefault();
-        startX = e.clientX;
-        isDragging = true;
-        trackEl.classList.add('dragging');
-        trackEl.style.transition = 'none';
-      }
-
-      function handleMouseMove(e) {
-        if (!isDragging || slideCount <= 1) return;
-        e.preventDefault();
-        
-        const diffX = e.clientX - startX;
-        const w = containerEl.offsetWidth;
-        let newX = -currentIndex * w + diffX;
-        
-        if (currentIndex === 0 && diffX > 0) {
-          newX = diffX * 0.2;
-        } else if (currentIndex === slideCount - 1 && diffX < 0) {
-          newX = -currentIndex * w + diffX * 0.2;
-        }
-        
-        trackEl.style.transform = `translateX(${newX}px)`;
-      }
-
-      function handleMouseUp(e) {
-        if (!isDragging || slideCount <= 1) return;
-        
-        const w = containerEl.offsetWidth;
-        const transform = trackEl.style.transform;
-        const match = transform.match(/translateX\(([-\d.]+)px\)/);
-        
-        if (match) {
-          const currentX = parseFloat(match[1]);
-          const expectedIndex = Math.round(-currentX / w);
-          currentIndex = Math.min(Math.max(expectedIndex, 0), slideCount - 1);
-          goToSlide(currentIndex, true);
-        }
-        
-        isDragging = false;
-        trackEl.classList.remove('dragging');
-      }
-
+      
       function updateSlideWidth() {
-        if (!containerEl) return;
-        const w = containerEl.offsetWidth;
-        document.querySelectorAll('.banner-slide').forEach(s => s.style.flex = `0 0 ${w}px`);
+        if (!containerElement || !trackElement) return;
+        const containerWidth = containerElement.offsetWidth;
+        const slides = document.querySelectorAll('.banner-slide');
+        slides.forEach(slide => {
+          slide.style.flex = `0 0 ${containerWidth}px`;
+        });
         goToSlide(currentIndex, false);
       }
-
+      
       function goToSlide(index, smooth = true) {
         if (index < 0) index = 0;
         if (index >= slideCount) index = slideCount - 1;
+        
         currentIndex = index;
+        const containerWidth = containerElement.offsetWidth;
         
-        const w = containerEl.offsetWidth;
-        trackEl.style.transition = smooth ? 'transform 0.2s ease-out' : 'none';
-        trackEl.style.transform = `translateX(-${currentIndex * w}px)`;
+        trackElement.style.transition = smooth ? 'transform 0.3s ease' : 'none';
+        trackElement.style.transform = `translateX(-${currentIndex * containerWidth}px)`;
         
-        document.querySelectorAll('.dot').forEach((dot, i) => {
+        const dots = document.querySelectorAll('.dot');
+        dots.forEach((dot, i) => {
           dot.classList.toggle('active', i === currentIndex);
         });
       }
+      
+      function dragStart(e) {
+        if (slideCount <= 1) return;
+        e.preventDefault();
+        
+        const clientX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
+        startX = clientX;
+        isDragging = true;
+        
+        trackElement.classList.add('dragging');
+        trackElement.style.transition = 'none';
+      }
+      
+      function dragMove(e) {
+        if (!isDragging || slideCount <= 1) return;
+        e.preventDefault();
+        
+        const clientX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+        const diff = clientX - startX;
+        const containerWidth = containerElement.offsetWidth;
+        
+        let newTranslate = -currentIndex * containerWidth + diff;
+        
+        if (currentIndex === 0 && diff > 0) {
+          newTranslate = diff * 0.3;
+        } else if (currentIndex === slideCount - 1 && diff < 0) {
+          newTranslate = -currentIndex * containerWidth + diff * 0.3;
+        }
+        
+        trackElement.style.transform = `translateX(${newTranslate}px)`;
+      }
+      
+      function dragEnd(e) {
+        if (!isDragging || slideCount <= 1) return;
+        isDragging = false;
+        trackElement.classList.remove('dragging');
+        
+        const containerWidth = containerElement.offsetWidth;
+        const transform = trackElement.style.transform;
+        const match = transform.match(/translateX\(([-\d.]+)px\)/);
+        
+        if (match) {
+          const currentTranslate = parseFloat(match[1]);
+          const expectedIndex = Math.round(-currentTranslate / containerWidth);
+          goToSlide(expectedIndex, true);
+        }
+      }
 
-      // Запуск
+      // Запускаем
       loadNews();
       loadBanners();
     });
