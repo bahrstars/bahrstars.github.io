@@ -234,15 +234,50 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const API_KEY = 'AIzaSyC9bG5mHEAm-Ny7REY-PYUktLiCBYyotos';
-      const CHANNEL_ID = 'UC3leOhpSOh07lNq555epvMA';
-      const MAX_RESULTS = 30;
+      const MAX_RESULTS_PER_CHANNEL = 3; // По 3 видео с канала
       
       const videosContainer = document.getElementById('videos-container');
-      
-      function fetchVideos() {
-        const url = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=${MAX_RESULTS}&type=video`;
+
+      // Получаем список ID каналов
+      function fetchChannelIds() {
+        return fetch('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/Videos/IDs')
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Не удалось загрузить список каналов');
+            }
+            return response.text();
+          })
+          .then(text => {
+            try {
+              // Пробуем распарсить как JSON массив
+              return JSON.parse(text);
+            } catch (e) {
+              console.warn('Не удалось распарсить JSON, пробуем другие форматы');
+              
+              // Пробуем распарсить как текст с разделителями
+              const lines = text.split('\n')
+                .map(line => line.trim())
+                .filter(line => line && !line.startsWith('//') && !line.startsWith('#'));
+              
+              if (lines.length > 0) {
+                // Если первая строка похожа на JSON массив
+                if (lines[0].startsWith('[') && lines[lines.length-1].endsWith(']')) {
+                  return JSON.parse(lines.join(''));
+                }
+                // Если просто список ID
+                return lines;
+              }
+              
+              throw new Error('Неизвестный формат списка каналов');
+            }
+          });
+      }
+
+      // Получаем видео с одного канала
+      function fetchVideosFromChannel(channelId) {
+        const url = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${channelId}&part=snippet,id&order=date&maxResults=${MAX_RESULTS_PER_CHANNEL}&type=video`;
         
-        fetch(url)
+        return fetch(url)
           .then(response => {
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
@@ -250,58 +285,101 @@
             return response.json();
           })
           .then(data => {
-            console.log('YouTube API response:', data);
-            videosContainer.innerHTML = '';
-            
             if (!data.items || data.items.length === 0) {
-              videosContainer.innerHTML = '<div class="error-message">Видео не найдены</div>';
-              return;
+              return [];
             }
             
-            const videoItems = data.items.filter(item => item.id.kind === 'youtube#video');
-            
-            if (videoItems.length === 0) {
-              videosContainer.innerHTML = '<div class="error-message">Нет доступных видео</div>';
-              return;
-            }
-            
-            videoItems.forEach((video, index) => {
-              const publishDate = new Date(video.snippet.publishedAt);
-              const formattedDate = `${publishDate.getDate().toString().padStart(2, '0')}.${(publishDate.getMonth() + 1).toString().padStart(2, '0')}.${publishDate.getFullYear()}`;
-              
-              const videoItem = document.createElement('a');
-              videoItem.className = 'video-item';
-              videoItem.href = `https://www.youtube.com/watch?v=${video.id.videoId}`;
-              videoItem.target = '_blank';
-              videoItem.rel = 'noopener noreferrer';
-              
-              videoItem.innerHTML = `
-                <div class="video-thumbnail-container">
-                  <img src="${video.snippet.thumbnails.medium.url}" 
-                       class="video-thumbnail" alt="${video.snippet.title}"
-                       onerror="this.src='https://via.placeholder.com/320x180/1a3e8c/ffffff?text=No+Thumbnail'">
-                  <div class="play-icon"></div>
-                </div>
-                <div class="video-content">
-                  <div class="video-title">${video.snippet.title}</div>
-                  <div class="video-meta">
-                    <span class="video-date">${formattedDate}</span>
-                    <span class="video-author">${video.snippet.channelTitle}</span>
-                  </div>
-                </div>
-              `;
-              
-              videosContainer.appendChild(videoItem);
-            });
+            return data.items
+              .filter(item => item.id.kind === 'youtube#video')
+              .map(video => ({
+                videoId: video.id.videoId,
+                title: video.snippet.title,
+                thumbnail: video.snippet.thumbnails.medium.url,
+                date: video.snippet.publishedAt,
+                channelTitle: video.snippet.channelTitle
+              }));
           })
           .catch(error => {
-            console.error('Error loading videos:', error);
-            videosContainer.innerHTML = 
-              `<div class="error-message">Ошибка загрузки: ${error.message}</div>`;
+            console.error(`Ошибка загрузки с канала ${channelId}:`, error);
+            return [];
           });
       }
+
+      // Основная функция загрузки
+      async function loadVideos() {
+        try {
+          // Получаем список каналов
+          const channelIds = await fetchChannelIds();
+          console.log('Загружены ID каналов:', channelIds);
+          
+          if (!Array.isArray(channelIds) || channelIds.length === 0) {
+            videosContainer.innerHTML = '<div class="error-message">Список каналов пуст</div>';
+            return;
+          }
+
+          videosContainer.innerHTML = '<div class="loading">Загрузка видео с каналов...</div>';
+
+          // Загружаем видео со всех каналов параллельно
+          const videosPromises = channelIds.map(channelId => fetchVideosFromChannel(channelId));
+          const results = await Promise.all(videosPromises);
+          
+          // Объединяем и сортируем по дате
+          let allVideos = results.flat();
+          
+          if (allVideos.length === 0) {
+            videosContainer.innerHTML = '<div class="error-message">Не удалось загрузить видео</div>';
+            return;
+          }
+
+          // Сортируем по дате (новые сверху)
+          allVideos.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+          // Ограничиваем до 30 видео
+          allVideos = allVideos.slice(0, 30);
+
+          // Очищаем контейнер
+          videosContainer.innerHTML = '';
+
+          // Отображаем видео
+          allVideos.forEach((video, index) => {
+            const publishDate = new Date(video.date);
+            const formattedDate = `${publishDate.getDate().toString().padStart(2, '0')}.${(publishDate.getMonth() + 1).toString().padStart(2, '0')}.${publishDate.getFullYear()}`;
+            
+            const videoItem = document.createElement('a');
+            videoItem.className = 'video-item';
+            
+            // Исправление: добавляем rel="opener" для решения проблемы с COOP
+            videoItem.href = `https://www.youtube.com/watch?v=${video.videoId}`;
+            videoItem.target = '_blank';
+            videoItem.rel = 'noopener noreferrer opener'; // Ключевое изменение!
+            
+            videoItem.innerHTML = `
+              <div class="video-thumbnail-container">
+                <img src="${video.thumbnail}" 
+                     class="video-thumbnail" alt="${video.title}"
+                     onerror="this.src='https://via.placeholder.com/320x180/1a3e8c/ffffff?text=No+Thumbnail'">
+                <div class="play-icon"></div>
+              </div>
+              <div class="video-content">
+                <div class="video-title">${video.title}</div>
+                <div class="video-meta">
+                  <span class="video-date">${formattedDate}</span>
+                  <span class="video-author">${video.channelTitle}</span>
+                </div>
+              </div>
+            `;
+            
+            videosContainer.appendChild(videoItem);
+          });
+
+        } catch (error) {
+          console.error('Ошибка загрузки видео:', error);
+          videosContainer.innerHTML = 
+            `<div class="error-message">Ошибка загрузки: ${error.message}</div>`;
+        }
+      }
       
-      fetchVideos();
+      loadVideos();
     });
   </script>
 </body>
