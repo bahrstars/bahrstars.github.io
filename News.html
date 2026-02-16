@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Brawl Stars — Новости</title>
   <style>
-    /* Подключение шрифта */
     @font-face {
       font-family: "Lilita One";
       src: url('data:application/font-ttf;charset=utf-8;base64,<base64_encoded_font>') format('truetype');
@@ -13,11 +12,7 @@
       font-style: normal;
     }
 
-    * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: "Lilita One", Arial, sans-serif;
@@ -37,10 +32,9 @@
       margin: 0 auto;
       padding: 10px;
       display: grid;
-      grid-template-columns: 1.8fr 1fr; /* Баннер шире, новости уже */
+      grid-template-columns: 1.8fr 1fr;
       gap: 15px;
       height: calc(100vh - 20px);
-      align-content: center;
     }
 
     /* ЛЕВАЯ ЧАСТЬ - БАННЕРЫ */
@@ -49,7 +43,8 @@
       border-radius: 12px;
       overflow: hidden;
       background: transparent;
-      height: fit-content;
+      display: flex;
+      flex-direction: column;
     }
 
     .carousel-container {
@@ -131,6 +126,7 @@
       justify-content: center;
       gap: 10px;
       margin-top: 12px;
+      min-height: 20px;
     }
 
     .dot {
@@ -151,14 +147,20 @@
       box-shadow: 0 0 8px #ffaa00;
     }
 
-    /* ПРАВАЯ ЧАСТЬ - НОВОСТИ (без прокрутки) */
+    /* ПРАВАЯ ЧАСТЬ - НОВОСТИ (скролл без полосы) */
     .news-container {
       width: 100%;
       display: flex;
       flex-direction: column;
       gap: 15px;
       height: 100%;
-      overflow-y: visible;
+      overflow-y: auto;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE/Edge */
+    }
+
+    .news-container::-webkit-scrollbar {
+      display: none; /* Chrome/Safari */
     }
 
     .news-item {
@@ -233,16 +235,10 @@
       text-align: center;
       border: 2px solid rgba(74, 119, 189, 0.3);
       border-radius: 12px;
-      width: 100%;
     }
 
-    .loading {
-      color: #9bdcff;
-    }
-
-    .error-message {
-      color: #ff4655;
-    }
+    .loading { color: #9bdcff; }
+    .error-message { color: #ff4655; }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
@@ -255,34 +251,27 @@
     .news-item:nth-child(4) { animation-delay: 0.4s; }
     .news-item:nth-child(5) { animation-delay: 0.5s; }
 
-    /* Мобильная адаптация */
     @media (max-width: 768px) {
       body {
         height: auto;
         overflow: auto;
         align-items: flex-start;
       }
-      
       .wrap {
         grid-template-columns: 1fr;
-        gap: 15px;
-        padding: 10px;
         height: auto;
       }
-      
-      .banner-slide {
-        aspect-ratio: 16/9;
-      }
+      .news-container { max-height: 400px; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <!-- ЛЕВАЯ ЧАСТЬ: Карусель баннеров -->
+    <!-- ЛЕВАЯ ЧАСТЬ: Баннеры -->
     <div class="banner-section">
       <div class="carousel-container" id="carouselContainer">
         <div class="carousel-track" id="carouselTrack">
-          <div class="loading" style="width:100%; padding:60px;">Загрузка баннеров...</div>
+          <div class="loading" style="padding:60px;">Загрузка баннеров...</div>
         </div>
       </div>
       <div class="carousel-dots" id="carouselDots"></div>
@@ -296,277 +285,239 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // ========== ЗАГРУЗКА НОВОСТЕЙ ==========
+      // Для отладки
+      const debugLog = (msg, data) => {
+        console.log(`[DEBUG] ${msg}`, data || '');
+      };
+
+      // ========== НОВОСТИ ==========
       function loadNews() {
         fetch('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/NewsIDs')
-          .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.json();
-          })
+          .then(response => response.json())
           .then(newsIDs => {
             const newsContainer = document.getElementById('news-container');
             newsContainer.innerHTML = '';
             
-            if (!newsIDs || newsIDs.length === 0) {
+            if (!newsIDs?.length) {
               newsContainer.innerHTML = '<div class="error-message">Новости отсутствуют</div>';
               return;
             }
             
             Promise.all(newsIDs.reverse().map((newsID, index) => {
               return fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/News${newsID}Data`)
-                .then(response => {
-                  if (!response.ok) throw new Error(`Failed to load news ${newsID}`);
-                  return response.json();
-                })
+                .then(res => res.json())
                 .then(newsData => {
-                  const newsItem = document.createElement('div');
-                  newsItem.className = 'news-item';
-                  
-                  const date = newsData.Data || newsData.Date || 'Без даты';
-                  const isNew = index === 0;
-                  
-                  newsItem.innerHTML = `
+                  const item = document.createElement('div');
+                  item.className = 'news-item';
+                  item.innerHTML = `
                     <div class="news-banner-container">
                       <img src="${newsData.Banner || 'https://via.placeholder.com/600x300/1a3e8c/ffffff?text=Brawl+Stars'}" 
-                           class="news-banner" alt="Баннер новости" 
-                           onerror="this.src='https://via.placeholder.com/600x300/1a3e8c/ffffff?text=Brawl+Stars'">
-                      ${isNew ? '<div class="new-badge">НОВОЕ</div>' : ''}
+                           class="news-banner" onerror="this.src='https://via.placeholder.com/600x300/1a3e8c/ffffff?text=Brawl+Stars'">
+                      ${index === 0 ? '<div class="new-badge">НОВОЕ</div>' : ''}
                     </div>
                     <div class="news-content">
-                      <div class="news-date">${date}</div>
+                      <div class="news-date">${newsData.Data || newsData.Date || 'Без даты'}</div>
                       <div class="news-title">${newsData.Name || 'Без названия'}</div>
                     </div>
                   `;
-                  
-                  newsItem.addEventListener('click', () => {
+                  item.addEventListener('click', () => {
                     window.location.href = `https://bahrstars.github.io/NewsPage.html?id=${newsID}`;
                   });
-                  
-                  return newsItem;
-                })
-                .catch(error => {
-                  console.error(`Error loading news ${newsID}:`, error);
-                  return null;
+                  return item;
                 });
             })).then(items => {
-              items.filter(item => item !== null).forEach(item => {
-                newsContainer.appendChild(item);
-              });
-              
-              if (newsContainer.children.length === 0) {
-                newsContainer.innerHTML = '<div class="error-message">Не удалось загрузить новости</div>';
-              }
+              items.filter(i => i).forEach(i => newsContainer.appendChild(i));
             });
           })
-          .catch(error => {
-            console.error('Error loading news:', error);
-            document.getElementById('news-container').innerHTML = 
-              '<div class="error-message">Ошибка загрузки новостей. Пожалуйста, попробуйте позже.</div>';
+          .catch(() => {
+            document.getElementById('news-container').innerHTML = '<div class="error-message">Ошибка загрузки новостей</div>';
           });
       }
 
-      // ========== ЗАГРУЗКА БАННЕРОВ ==========
-      function loadBanners() {
+      // ========== БАННЕРЫ ==========
+      async function loadBanners() {
         const track = document.getElementById('carouselTrack');
         const dotsContainer = document.getElementById('carouselDots');
         
-        track.innerHTML = '<div class="loading" style="width:100%; padding:60px;">Загрузка баннеров...</div>';
-        
-        fetch('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/News/Banner/BannersIDs')
-          .then(response => {
-            if (!response.ok) throw new Error('Failed to load banner IDs');
-            return response.json();
-          })
-          .then(bannerIds => {
-            console.log('Banner IDs:', bannerIds); // Отладка
-            
-            if (!bannerIds || !Array.isArray(bannerIds) || bannerIds.length === 0) {
-              track.innerHTML = '<div class="error-message">Нет баннеров</div>';
-              return;
-            }
-            
-            Promise.all(bannerIds.map(id => 
-              fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/News/Banner/Banner${id}Data`)
-                .then(res => {
-                  if (!res.ok) throw new Error(`Failed to load banner ${id}`);
-                  return res.json();
-                })
-                .catch(err => {
-                  console.error(`Error loading banner ${id}:`, err);
-                  return null;
-                })
-            )).then(bannersData => {
-              const validBanners = bannersData.filter(b => b && b.Banner);
-              console.log('Valid banners:', validBanners); // Отладка
+        try {
+          debugLog('Загружаем баннер IDs...');
+          const idsResponse = await fetch('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/News/Banner/BannersIDs');
+          const bannerIds = await idsResponse.json();
+          debugLog('Получены IDs:', bannerIds);
+          
+          if (!Array.isArray(bannerIds) || bannerIds.length === 0) {
+            track.innerHTML = '<div class="error-message">Нет баннеров</div>';
+            return;
+          }
+
+          const banners = [];
+          
+          for (const id of bannerIds) {
+            try {
+              debugLog(`Загружаем баннер ${id}...`);
+              const res = await fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/News/Banner/Banner${id}Data`);
+              const data = await res.json();
+              debugLog(`Баннер ${id} данные:`, data);
               
-              if (validBanners.length === 0) {
-                track.innerHTML = '<div class="error-message">Не удалось загрузить баннеры</div>';
-                return;
-              }
-              
-              track.innerHTML = '';
-              
-              validBanners.forEach((banner) => {
-                const slide = document.createElement('div');
-                slide.className = 'banner-slide';
-                
-                const img = document.createElement('img');
-                img.src = banner.Banner;
-                img.alt = 'Баннер';
-                img.onerror = function() {
-                  this.src = 'https://via.placeholder.com/800x450/1a3e8c/ffffff?text=Banner+Error';
-                };
-                
-                const buttonsDiv = document.createElement('div');
-                buttonsDiv.className = 'banner-buttons';
-                
-                Object.keys(banner).forEach(key => {
-                  if (key.startsWith('Button') && banner[key] && typeof banner[key] === 'object') {
-                    const btnData = banner[key];
-                    if (btnData.Text && btnData.Link) {
-                      const btn = document.createElement('a');
-                      btn.href = btnData.Link;
-                      btn.target = '_blank';
-                      btn.rel = 'noopener noreferrer';
-                      btn.className = 'banner-btn';
-                      btn.textContent = btnData.Text;
-                      btn.onclick = (e) => e.stopPropagation();
-                      buttonsDiv.appendChild(btn);
-                    }
-                  }
-                });
-                
-                slide.appendChild(img);
-                slide.appendChild(buttonsDiv);
-                track.appendChild(slide);
-              });
-              
-              // Создаем dots ТОЛЬКО если больше 1 баннера
-              dotsContainer.innerHTML = '';
-              if (validBanners.length > 1) {
-                validBanners.forEach((_, i) => {
-                  const dot = document.createElement('span');
-                  dot.className = 'dot';
-                  if (i === 0) dot.classList.add('active');
-                  dot.addEventListener('click', () => {
-                    goToSlide(i);
-                  });
-                  dotsContainer.appendChild(dot);
-                });
+              if (data && data.Banner) {
+                banners.push(data);
               } else {
-                dotsContainer.style.display = 'none';
+                debugLog(`Баннер ${id} не содержит Banner`);
               }
-              
-              // Инициализируем карусель
-              initCarousel(validBanners.length);
+            } catch (e) {
+              debugLog(`Ошибка загрузки баннера ${id}:`, e);
+            }
+          }
+          
+          debugLog('Всего загружено баннеров:', banners.length);
+          
+          if (banners.length === 0) {
+            track.innerHTML = '<div class="error-message">Не удалось загрузить баннеры</div>';
+            return;
+          }
+
+          // Отрисовка
+          track.innerHTML = '';
+          
+          banners.forEach((banner, idx) => {
+            const slide = document.createElement('div');
+            slide.className = 'banner-slide';
+            
+            const img = document.createElement('img');
+            img.src = banner.Banner;
+            img.alt = `Баннер ${idx + 1}`;
+            img.onerror = function() {
+              this.src = 'https://via.placeholder.com/800x450/1a3e8c/ffffff?text=Баннер+не+загрузился';
+            };
+            
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.className = 'banner-buttons';
+            
+            // Ищем все кнопки
+            Object.keys(banner).forEach(key => {
+              if (key.startsWith('Button') && banner[key]?.Text && banner[key]?.Link) {
+                const btn = document.createElement('a');
+                btn.href = banner[key].Link;
+                btn.target = '_blank';
+                btn.className = 'banner-btn';
+                btn.textContent = banner[key].Text;
+                btn.onclick = (e) => e.stopPropagation();
+                buttonsDiv.appendChild(btn);
+              }
             });
-          })
-          .catch(error => {
-            console.error('Banner loading error:', error);
-            track.innerHTML = '<div class="error-message">Ошибка загрузки баннеров</div>';
+            
+            slide.appendChild(img);
+            slide.appendChild(buttonsDiv);
+            track.appendChild(slide);
           });
+
+          // Точки навигации
+          dotsContainer.innerHTML = '';
+          if (banners.length > 1) {
+            banners.forEach((_, i) => {
+              const dot = document.createElement('span');
+              dot.className = 'dot';
+              if (i === 0) dot.classList.add('active');
+              dot.addEventListener('click', () => goToSlide(i));
+              dotsContainer.appendChild(dot);
+            });
+          } else {
+            dotsContainer.style.display = 'none';
+          }
+
+          // Инициализация карусели
+          initCarousel(banners.length);
+
+        } catch (error) {
+          debugLog('Критическая ошибка:', error);
+          track.innerHTML = '<div class="error-message">Ошибка загрузки баннеров</div>';
+        }
       }
 
       // ========== КАРУСЕЛЬ ==========
       let currentIndex = 0;
       let slideCount = 0;
       let startX, isDragging = false;
-      let trackElement, containerElement;
-      
+      let trackEl, containerEl;
+
       function initCarousel(count) {
         slideCount = count;
-        trackElement = document.getElementById('carouselTrack');
-        containerElement = document.getElementById('carouselContainer');
+        trackEl = document.getElementById('carouselTrack');
+        containerEl = document.getElementById('carouselContainer');
         
-        if (slideCount <= 1) {
-          return; // Не инициализируем свайп для одного баннера
-        }
+        if (slideCount <= 1) return;
         
         updateSlideWidth();
         
-        trackElement.addEventListener('mousedown', dragStart);
-        trackElement.addEventListener('touchstart', dragStart, { passive: false });
+        trackEl.addEventListener('mousedown', dragStart);
+        trackEl.addEventListener('touchstart', dragStart, { passive: false });
         window.addEventListener('mousemove', dragMove);
         window.addEventListener('touchmove', dragMove, { passive: false });
         window.addEventListener('mouseup', dragEnd);
         window.addEventListener('touchend', dragEnd);
         window.addEventListener('resize', updateSlideWidth);
       }
-      
+
       function updateSlideWidth() {
-        if (!containerElement || !trackElement) return;
-        const containerWidth = containerElement.offsetWidth;
-        const slides = document.querySelectorAll('.banner-slide');
-        slides.forEach(slide => {
-          slide.style.flex = `0 0 ${containerWidth}px`;
-        });
+        if (!containerEl) return;
+        const w = containerEl.offsetWidth;
+        document.querySelectorAll('.banner-slide').forEach(s => s.style.flex = `0 0 ${w}px`);
         goToSlide(currentIndex, false);
       }
-      
+
       function goToSlide(index, smooth = true) {
         if (index < 0) index = 0;
         if (index >= slideCount) index = slideCount - 1;
-        
         currentIndex = index;
-        const containerWidth = containerElement.offsetWidth;
         
-        trackElement.style.transition = smooth ? 'transform 0.3s ease' : 'none';
-        trackElement.style.transform = `translateX(-${currentIndex * containerWidth}px)`;
+        const w = containerEl.offsetWidth;
+        trackEl.style.transition = smooth ? 'transform 0.3s ease' : 'none';
+        trackEl.style.transform = `translateX(-${currentIndex * w}px)`;
         
-        const dots = document.querySelectorAll('.dot');
-        dots.forEach((dot, i) => {
+        document.querySelectorAll('.dot').forEach((dot, i) => {
           dot.classList.toggle('active', i === currentIndex);
         });
       }
-      
+
       function dragStart(e) {
         if (slideCount <= 1) return;
         e.preventDefault();
-        
-        const clientX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
-        startX = clientX;
+        startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
         isDragging = true;
-        
-        trackElement.classList.add('dragging');
-        trackElement.style.transition = 'none';
+        trackEl.classList.add('dragging');
+        trackEl.style.transition = 'none';
       }
-      
+
       function dragMove(e) {
         if (!isDragging || slideCount <= 1) return;
         e.preventDefault();
+        const x = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+        const diff = x - startX;
+        const w = containerEl.offsetWidth;
         
-        const clientX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
-        const diff = clientX - startX;
-        const containerWidth = containerElement.offsetWidth;
+        let newX = -currentIndex * w + diff;
         
-        let newTranslate = -currentIndex * containerWidth + diff;
+        // Резинка
+        if (currentIndex === 0 && diff > 0) newX = diff * 0.3;
+        else if (currentIndex === slideCount - 1 && diff < 0) newX = -currentIndex * w + diff * 0.3;
         
-        if (currentIndex === 0 && diff > 0) {
-          newTranslate = diff * 0.3;
-        } else if (currentIndex === slideCount - 1 && diff < 0) {
-          newTranslate = -currentIndex * containerWidth + diff * 0.3;
-        }
-        
-        trackElement.style.transform = `translateX(${newTranslate}px)`;
+        trackEl.style.transform = `translateX(${newX}px)`;
       }
-      
-      function dragEnd(e) {
+
+      function dragEnd() {
         if (!isDragging || slideCount <= 1) return;
         isDragging = false;
-        trackElement.classList.remove('dragging');
+        trackEl.classList.remove('dragging');
         
-        const containerWidth = containerElement.offsetWidth;
-        const transform = trackElement.style.transform;
-        const match = transform.match(/translateX\(([-\d.]+)px\)/);
-        
+        const w = containerEl.offsetWidth;
+        const match = trackEl.style.transform.match(/translateX\(([-\d.]+)px\)/);
         if (match) {
-          const currentTranslate = parseFloat(match[1]);
-          const expectedIndex = Math.round(-currentTranslate / containerWidth);
-          goToSlide(expectedIndex, true);
+          const expected = Math.round(-parseFloat(match[1]) / w);
+          goToSlide(expected, true);
         }
       }
 
-      // Запускаем
+      // Запуск
       loadNews();
       loadBanners();
     });
