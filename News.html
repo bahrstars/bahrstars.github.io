@@ -2,9 +2,10 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Brawl Stars — Новости</title>
   <style>
+    /* Подключение шрифта */
     @font-face {
       font-family: "Lilita One";
       src: url('data:application/font-ttf;charset=utf-8;base64,<base64_encoded_font>') format('truetype');
@@ -20,149 +21,29 @@
       color: #fff;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
+      padding: 20px 0;
     }
 
     .wrap {
       width: 100%;
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 10px;
-      display: grid;
-      grid-template-columns: 1.8fr 1fr;
-      gap: 15px;
-      height: calc(100vh - 20px);
+      padding: 0 20px;
     }
 
-    /* ЛЕВАЯ ЧАСТЬ - БАННЕРЫ */
-    .banner-section {
-      width: 100%;
-      border-radius: 12px;
-      overflow: hidden;
-      background: transparent;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .carousel-container {
-      position: relative;
-      width: 100%;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-      user-select: none;
-      touch-action: pan-y pinch-zoom;
-    }
-
-    .carousel-track {
-      display: flex;
-      transition: transform 0.3s ease-out;
-      cursor: grab;
-    }
-
-    .carousel-track.dragging {
-      transition: none;
-      cursor: grabbing;
-    }
-
-    .banner-slide {
-      flex: 0 0 100%;
-      aspect-ratio: 16 / 9;
-      background: #1a2e55;
-      position: relative;
-    }
-
-    .banner-slide img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      pointer-events: none;
-    }
-
-    .banner-buttons {
-      position: absolute;
-      bottom: 15px;
-      left: 0;
-      right: 0;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 12px;
-      padding: 8px 12px;
-      background: linear-gradient(0deg, rgba(0,0,0,0.6) 0%, transparent 100%);
-      pointer-events: none;
-    }
-
-    .banner-btn {
-      pointer-events: auto;
-      background: linear-gradient(180deg, #ffd83a, #ffc400);
-      border: none;
-      padding: 8px 20px;
-      border-radius: 30px;
-      font-family: "Lilita One", Arial, sans-serif;
-      font-size: 16px;
-      color: #111;
-      font-weight: 800;
-      box-shadow: 0 4px 0 #b07d00, 0 4px 10px rgba(0,0,0,0.3);
-      transition: 0.1s ease;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .banner-btn:active {
-      transform: translateY(3px);
-      box-shadow: 0 1px 0 #b07d00, 0 4px 10px rgba(0,0,0,0.3);
-    }
-
-    .carousel-dots {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 12px;
-      min-height: 20px;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 10px;
-      background: #33557a;
-      border: 2px solid transparent;
-      transition: 0.2s;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    .dot.active {
-      background: #ffd83a;
-      width: 30px;
-      border-color: #ffc800;
-      box-shadow: 0 0 8px #ffaa00;
-    }
-
-    /* ПРАВАЯ ЧАСТЬ - НОВОСТИ (скролл без полосы) */
+    /* Контейнер новостей */
     .news-container {
       width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      height: 100%;
-      overflow-y: auto;
-      scrollbar-width: none; /* Firefox */
-      -ms-overflow-style: none; /* IE/Edge */
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
     }
 
-    .news-container::-webkit-scrollbar {
-      display: none; /* Chrome/Safari */
-    }
-
+    /* Элемент новости */
     .news-item {
       background: linear-gradient(180deg, #0a1835 0%, #08122a 100%);
       transition: all 0.3s ease;
@@ -171,9 +52,6 @@
       cursor: pointer;
       overflow: hidden;
       border-radius: 12px;
-      animation: fadeIn 0.5s ease forwards;
-      opacity: 0;
-      flex-shrink: 0;
     }
 
     .news-item:hover {
@@ -185,7 +63,7 @@
     .news-banner-container {
       position: relative;
       width: 100%;
-      height: 140px;
+      height: 180px;
       overflow: hidden;
     }
 
@@ -229,20 +107,35 @@
       line-height: 1.3;
     }
 
+    /* Состояния загрузки и ошибок */
     .loading, .error-message {
       background: linear-gradient(180deg, #0a1835 0%, #08122a 100%);
-      padding: 30px;
+      padding: 40px;
       text-align: center;
       border: 2px solid rgba(74, 119, 189, 0.3);
-      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      grid-column: 1 / -1;
     }
 
-    .loading { color: #9bdcff; }
-    .error-message { color: #ff4655; }
+    .loading {
+      color: #9bdcff;
+      font-size: 18px;
+    }
 
+    .error-message {
+      color: #ff4655;
+      font-size: 16px;
+    }
+
+    /* Анимации */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    .news-item {
+      animation: fadeIn 0.5s ease forwards;
+      opacity: 0;
     }
 
     .news-item:nth-child(1) { animation-delay: 0.1s; }
@@ -250,34 +143,56 @@
     .news-item:nth-child(3) { animation-delay: 0.3s; }
     .news-item:nth-child(4) { animation-delay: 0.4s; }
     .news-item:nth-child(5) { animation-delay: 0.5s; }
+    .news-item:nth-child(6) { animation-delay: 0.6s; }
 
+    /* Адаптивность */
     @media (max-width: 768px) {
-      body {
-        height: auto;
-        overflow: auto;
-        align-items: flex-start;
-      }
       .wrap {
-        grid-template-columns: 1fr;
-        height: auto;
+        padding: 0 15px;
       }
-      .news-container { max-height: 400px; }
+      
+      .news-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+      
+      .news-banner-container {
+        height: 160px;
+      }
+      
+      .news-content {
+        padding: 14px;
+      }
+      
+      .news-title {
+        font-size: 17px;
+      }
+      
+      .new-badge {
+        top: 10px;
+        right: 10px;
+        font-size: 11px;
+        padding: 4px 8px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .news-banner-container {
+        height: 140px;
+      }
+      
+      .news-title {
+        font-size: 16px;
+      }
+      
+      .news-content {
+        padding: 12px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <!-- ЛЕВАЯ ЧАСТЬ: Баннеры -->
-    <div class="banner-section">
-      <div class="carousel-container" id="carouselContainer">
-        <div class="carousel-track" id="carouselTrack">
-          <div class="loading" style="padding:60px;">Загрузка баннеров...</div>
-        </div>
-      </div>
-      <div class="carousel-dots" id="carouselDots"></div>
-    </div>
-
-    <!-- ПРАВАЯ ЧАСТЬ: Новости -->
     <div class="news-container" id="news-container">
       <div class="loading">Загрузка новостей...</div>
     </div>
@@ -285,241 +200,76 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Для отладки
-      const debugLog = (msg, data) => {
-        console.log(`[DEBUG] ${msg}`, data || '');
-      };
-
-      // ========== НОВОСТИ ==========
-      function loadNews() {
-        fetch('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/NewsIDs')
-          .then(response => response.json())
-          .then(newsIDs => {
-            const newsContainer = document.getElementById('news-container');
-            newsContainer.innerHTML = '';
-            
-            if (!newsIDs?.length) {
-              newsContainer.innerHTML = '<div class="error-message">Новости отсутствуют</div>';
-              return;
-            }
-            
-            Promise.all(newsIDs.reverse().map((newsID, index) => {
-              return fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/News${newsID}Data`)
-                .then(res => res.json())
-                .then(newsData => {
-                  const item = document.createElement('div');
-                  item.className = 'news-item';
-                  item.innerHTML = `
-                    <div class="news-banner-container">
-                      <img src="${newsData.Banner || 'https://via.placeholder.com/600x300/1a3e8c/ffffff?text=Brawl+Stars'}" 
-                           class="news-banner" onerror="this.src='https://via.placeholder.com/600x300/1a3e8c/ffffff?text=Brawl+Stars'">
-                      ${index === 0 ? '<div class="new-badge">НОВОЕ</div>' : ''}
-                    </div>
-                    <div class="news-content">
-                      <div class="news-date">${newsData.Data || newsData.Date || 'Без даты'}</div>
-                      <div class="news-title">${newsData.Name || 'Без названия'}</div>
-                    </div>
-                  `;
-                  item.addEventListener('click', () => {
-                    window.location.href = `https://bahrstars.github.io/NewsPage.html?id=${newsID}`;
-                  });
-                  return item;
+      fetch('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/NewsIDs')
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.json();
+        })
+        .then(newsIDs => {
+          const newsContainer = document.getElementById('news-container');
+          newsContainer.innerHTML = '';
+          
+          if (!newsIDs || newsIDs.length === 0) {
+            newsContainer.innerHTML = '<div class="error-message">Новости отсутствуют</div>';
+            return;
+          }
+          
+          // Process each news ID in reverse order (newest first)
+          Promise.all(newsIDs.reverse().map((newsID, index) => {
+            return fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/main/News/News${newsID}Data`)
+              .then(response => {
+                if (!response.ok) throw new Error(`Failed to load news ${newsID}`);
+                return response.json();
+              })
+              .then(newsData => {
+                const newsItem = document.createElement('div');
+                newsItem.className = 'news-item';
+                
+                // Use Data if available, otherwise use Date as fallback
+                const date = newsData.Data || newsData.Date || 'Без даты';
+                
+                // Добавляем бейдж "Новое" для самой новой новости
+                const isNew = index === 0;
+                
+                newsItem.innerHTML = `
+                  <div class="news-banner-container">
+                    <img src="${newsData.Banner || 'https://via.placeholder.com/600x300/1a3e8c/ffffff?text=Brawl+Stars'}" 
+                         class="news-banner" alt="Баннер новости" 
+                         onerror="this.src='https://via.placeholder.com/600x300/1a3e8c/ffffff?text=Brawl+Stars'">
+                    ${isNew ? '<div class="new-badge">НОВОЕ</div>' : ''}
+                  </div>
+                  <div class="news-content">
+                    <div class="news-date">${date}</div>
+                    <div class="news-title">${newsData.Name || 'Без названия'}</div>
+                  </div>
+                `;
+                
+                // Добавляем обработчик клика для перехода к полной      новости
+                newsItem.addEventListener('click', () => {
+                  window.location.href = `https://bahrstars.github.io/NewsPage.html?id=${newsID}`;
                 });
-            })).then(items => {
-              items.filter(i => i).forEach(i => newsContainer.appendChild(i));
+                
+                return newsItem;
+              })
+              .catch(error => {
+                console.error(`Error loading news ${newsID}:`, error);
+                return null;
+              });
+          })).then(items => {
+            items.filter(item => item !== null).forEach(item => {
+              newsContainer.appendChild(item);
             });
-          })
-          .catch(() => {
-            document.getElementById('news-container').innerHTML = '<div class="error-message">Ошибка загрузки новостей</div>';
-          });
-      }
-
-      // ========== БАННЕРЫ ==========
-      async function loadBanners() {
-        const track = document.getElementById('carouselTrack');
-        const dotsContainer = document.getElementById('carouselDots');
-        
-        try {
-          debugLog('Загружаем баннер IDs...');
-          const idsResponse = await fetch('https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/News/Banner/BannersIDs');
-          const bannerIds = await idsResponse.json();
-          debugLog('Получены IDs:', bannerIds);
-          
-          if (!Array.isArray(bannerIds) || bannerIds.length === 0) {
-            track.innerHTML = '<div class="error-message">Нет баннеров</div>';
-            return;
-          }
-
-          const banners = [];
-          
-          for (const id of bannerIds) {
-            try {
-              debugLog(`Загружаем баннер ${id}...`);
-              const res = await fetch(`https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/refs/heads/main/News/Banner/Banner${id}Data`);
-              const data = await res.json();
-              debugLog(`Баннер ${id} данные:`, data);
-              
-              if (data && data.Banner) {
-                banners.push(data);
-              } else {
-                debugLog(`Баннер ${id} не содержит Banner`);
-              }
-            } catch (e) {
-              debugLog(`Ошибка загрузки баннера ${id}:`, e);
+            
+            if (newsContainer.children.length === 0) {
+              newsContainer.innerHTML = '<div class="error-message">Не удалось загрузить новости</div>';
             }
-          }
-          
-          debugLog('Всего загружено баннеров:', banners.length);
-          
-          if (banners.length === 0) {
-            track.innerHTML = '<div class="error-message">Не удалось загрузить баннеры</div>';
-            return;
-          }
-
-          // Отрисовка
-          track.innerHTML = '';
-          
-          banners.forEach((banner, idx) => {
-            const slide = document.createElement('div');
-            slide.className = 'banner-slide';
-            
-            const img = document.createElement('img');
-            img.src = banner.Banner;
-            img.alt = `Баннер ${idx + 1}`;
-            img.onerror = function() {
-              this.src = 'https://via.placeholder.com/800x450/1a3e8c/ffffff?text=Баннер+не+загрузился';
-            };
-            
-            const buttonsDiv = document.createElement('div');
-            buttonsDiv.className = 'banner-buttons';
-            
-            // Ищем все кнопки
-            Object.keys(banner).forEach(key => {
-              if (key.startsWith('Button') && banner[key]?.Text && banner[key]?.Link) {
-                const btn = document.createElement('a');
-                btn.href = banner[key].Link;
-                btn.target = '_blank';
-                btn.className = 'banner-btn';
-                btn.textContent = banner[key].Text;
-                btn.onclick = (e) => e.stopPropagation();
-                buttonsDiv.appendChild(btn);
-              }
-            });
-            
-            slide.appendChild(img);
-            slide.appendChild(buttonsDiv);
-            track.appendChild(slide);
           });
-
-          // Точки навигации
-          dotsContainer.innerHTML = '';
-          if (banners.length > 1) {
-            banners.forEach((_, i) => {
-              const dot = document.createElement('span');
-              dot.className = 'dot';
-              if (i === 0) dot.classList.add('active');
-              dot.addEventListener('click', () => goToSlide(i));
-              dotsContainer.appendChild(dot);
-            });
-          } else {
-            dotsContainer.style.display = 'none';
-          }
-
-          // Инициализация карусели
-          initCarousel(banners.length);
-
-        } catch (error) {
-          debugLog('Критическая ошибка:', error);
-          track.innerHTML = '<div class="error-message">Ошибка загрузки баннеров</div>';
-        }
-      }
-
-      // ========== КАРУСЕЛЬ ==========
-      let currentIndex = 0;
-      let slideCount = 0;
-      let startX, isDragging = false;
-      let trackEl, containerEl;
-
-      function initCarousel(count) {
-        slideCount = count;
-        trackEl = document.getElementById('carouselTrack');
-        containerEl = document.getElementById('carouselContainer');
-        
-        if (slideCount <= 1) return;
-        
-        updateSlideWidth();
-        
-        trackEl.addEventListener('mousedown', dragStart);
-        trackEl.addEventListener('touchstart', dragStart, { passive: false });
-        window.addEventListener('mousemove', dragMove);
-        window.addEventListener('touchmove', dragMove, { passive: false });
-        window.addEventListener('mouseup', dragEnd);
-        window.addEventListener('touchend', dragEnd);
-        window.addEventListener('resize', updateSlideWidth);
-      }
-
-      function updateSlideWidth() {
-        if (!containerEl) return;
-        const w = containerEl.offsetWidth;
-        document.querySelectorAll('.banner-slide').forEach(s => s.style.flex = `0 0 ${w}px`);
-        goToSlide(currentIndex, false);
-      }
-
-      function goToSlide(index, smooth = true) {
-        if (index < 0) index = 0;
-        if (index >= slideCount) index = slideCount - 1;
-        currentIndex = index;
-        
-        const w = containerEl.offsetWidth;
-        trackEl.style.transition = smooth ? 'transform 0.3s ease' : 'none';
-        trackEl.style.transform = `translateX(-${currentIndex * w}px)`;
-        
-        document.querySelectorAll('.dot').forEach((dot, i) => {
-          dot.classList.toggle('active', i === currentIndex);
+        })
+        .catch(error => {
+          console.error('Error loading news:', error);
+          document.getElementById('news-container').innerHTML = 
+            '<div class="error-message">Ошибка загрузки новостей. Пожалуйста, попробуйте позже.</div>';
         });
-      }
-
-      function dragStart(e) {
-        if (slideCount <= 1) return;
-        e.preventDefault();
-        startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
-        isDragging = true;
-        trackEl.classList.add('dragging');
-        trackEl.style.transition = 'none';
-      }
-
-      function dragMove(e) {
-        if (!isDragging || slideCount <= 1) return;
-        e.preventDefault();
-        const x = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
-        const diff = x - startX;
-        const w = containerEl.offsetWidth;
-        
-        let newX = -currentIndex * w + diff;
-        
-        // Резинка
-        if (currentIndex === 0 && diff > 0) newX = diff * 0.3;
-        else if (currentIndex === slideCount - 1 && diff < 0) newX = -currentIndex * w + diff * 0.3;
-        
-        trackEl.style.transform = `translateX(${newX}px)`;
-      }
-
-      function dragEnd() {
-        if (!isDragging || slideCount <= 1) return;
-        isDragging = false;
-        trackEl.classList.remove('dragging');
-        
-        const w = containerEl.offsetWidth;
-        const match = trackEl.style.transform.match(/translateX\(([-\d.]+)px\)/);
-        if (match) {
-          const expected = Math.round(-parseFloat(match[1]) / w);
-          goToSlide(expected, true);
-        }
-      }
-
-      // Запуск
-      loadNews();
-      loadBanners();
     });
   </script>
 </body>
