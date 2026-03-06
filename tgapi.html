@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mini App Info</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #222222);
+            padding: 20px;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--tg-theme-hint-color, #999999);
+            font-weight: 600;
+        }
+
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--tg-theme-section-separator-color, #e0e0e0);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--tg-theme-accent-text-color, #2481cc);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 4px 0;
+            border-bottom: 1px solid var(--tg-theme-section-separator-color, #e0e0e0);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            min-width: 110px;
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #666666);
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: 500;
+            word-break: break-word;
+            flex: 1;
+        }
+
+        .info-value.boolean {
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .info-value.true {
+            color: #2ecc71;
+        }
+
+        .info-value.false {
+            color: #e74c3c;
+        }
+
+        .json-view {
+            background: var(--tg-theme-bg-color, #ffffff);
+            padding: 12px;
+            border-radius: 10px;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid var(--tg-theme-section-separator-color, #e0e0e0);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .badge-success {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+
+        .badge-error {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .button {
+            background: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 16px;
+        }
+
+        .button:hover {
+            opacity: 0.9;
+        }
+
+        .button:active {
+            opacity: 0.8;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--tg-theme-hint-color, #999999);
+        }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--tg-theme-section-separator-color, #e0e0e0);
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Telegram User Info</h1>
+        
+        <!-- Статус инициализации -->
+        <div class="card" id="initStatus">
+            <div class="card-title">🔌 Статус подключения</div>
+            <div id="statusMessage">Проверка подключения к Telegram...</div>
+        </div>
+
+        <!-- Основная информация о пользователе -->
+        <div class="card" id="userInfoCard" style="display: none;">
+            <div class="card-title">👤 Информация о пользователе</div>
+            <div id="userAvatar" class="avatar" style="display: none;"></div>
+            <div class="info-grid" id="userInfo"></div>
+        </div>
+
+        <!-- Информация о чате -->
+        <div class="card" id="chatInfoCard" style="display: none;">
+            <div class="card-title">💬 Информация о чате</div>
+            <div class="info-grid" id="chatInfo"></div>
+        </div>
+
+        <!-- Параметры запуска -->
+        <div class="card" id="startParamCard" style="display: none;">
+            <div class="card-title">🚀 Параметры запуска</div>
+            <div class="info-grid" id="startParamInfo"></div>
+        </div>
+
+        <!-- Тема и цвета -->
+        <div class="card" id="themeCard" style="display: none;">
+            <div class="card-title">🎨 Тема оформления</div>
+            <div class="info-grid" id="themeInfo"></div>
+        </div>
+
+        <!-- Viewport информация -->
+        <div class="card" id="viewportCard" style="display: none;">
+            <div class="card-title">📐 Размеры экрана</div>
+            <div class="info-grid" id="viewportInfo"></div>
+        </div>
+
+        <!-- JSON данные -->
+        <div class="card" id="jsonCard" style="display: none;">
+            <div class="card-title">📋 Полные данные (initData)</div>
+            <pre class="json-view" id="jsonData"></pre>
+        </div>
+
+        <!-- Кнопка закрытия -->
+        <button class="button" id="closeButton" style="display: none;">✕ Закрыть приложение</button>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        (function() {
+            // Функция для обновления статуса
+            function updateStatus(message, isError = false) {
+                const statusDiv = document.getElementById('statusMessage');
+                if (statusDiv) {
+                    statusDiv.innerHTML = `<span class="status-badge ${isError ? 'badge-error' : 'badge-success'}">${isError ? '❌' : '✅'}</span> ${message}`;
+                }
+            }
+
+            // Функция для безопасного отображения значения
+            function safeValue(value, defaultValue = 'не указано') {
+                if (value === undefined || value === null || value === '') {
+                    return defaultValue;
+                }
+                if (typeof value === 'boolean') {
+                    return `<span class="info-value boolean ${value ? 'true' : 'false'}">${value}</span>`;
+                }
+                if (typeof value === 'object') {
+                    try {
+                        return JSON.stringify(value);
+                    } catch {
+                        return defaultValue;
+                    }
+                }
+                return value;
+            }
+
+            // Функция для создания строки информации
+            function createInfoRow(label, value) {
+                return `
+                    <div class="info-row">
+                        <div class="info-label">${label}</div>
+                        <div class="info-value">${safeValue(value)}</div>
+                    </div>
+                `;
+            }
+
+            // Проверяем доступность Telegram WebApp
+            if (typeof window.Telegram === 'undefined' || !window.Telegram.WebApp) {
+                updateStatus('Telegram WebApp не доступен. Запустите приложение через Telegram.', true);
+                return;
+            }
+
+            const tg = window.Telegram.WebApp;
+            
+            // Говорим Telegram, что мы готовы
+            tg.ready();
+            
+            // Включаем вертикальные свайпы (опционально)
+            tg.enableClosingConfirmation();
+
+            try {
+                // Получаем данные о пользователе
+                const initData = tg.initData || {};
+                const initDataUnsafe = tg.initDataUnsafe || {};
+                const user = initDataUnsafe.user || {};
+                const chat = initDataUnsafe.chat || {};
+                const receiver = initDataUnsafe.receiver || {};
+
+                updateStatus('Подключено к Telegram WebApp');
+
+                // Отображаем карточки
+                document.getElementById('userInfoCard').style.display = 'block';
+                document.getElementById('chatInfoCard').style.display = 'block';
+                document.getElementById('startParamCard').style.display = 'block';
+                document.getElementById('themeCard').style.display = 'block';
+                document.getElementById('viewportCard').style.display = 'block';
+                document.getElementById('jsonCard').style.display = 'block';
+                document.getElementById('closeButton').style.display = 'block';
+
+                // Аватар пользователя (инициалы)
+                if (user.first_name || user.last_name) {
+                    const avatarDiv = document.getElementById('userAvatar');
+                    const initials = (user.first_name ? user.first_name[0] : '') + 
+                                   (user.last_name ? user.last_name[0] : '');
+                    avatarDiv.textContent = initials.toUpperCase();
+                    avatarDiv.style.display = 'flex';
+                }
+
+                // Заполняем информацию о пользователе
+                const userInfo = document.getElementById('userInfo');
+                userInfo.innerHTML = `
+                    ${createInfoRow('ID', user.id)}
+                    ${createInfoRow('Имя', user.first_name)}
+                    ${createInfoRow('Фамилия', user.last_name)}
+                    ${createInfoRow('Username', user.username ? '@' + user.username : 'не указан')}
+                    ${createInfoRow('Язык', user.language_code)}
+                    ${createInfoRow('Премиум', user.is_premium)}
+                    ${createInfoRow('Бот', user.is_bot || false)}
+                    ${createInfoRow('Добавил в контакты', user.allows_write_to_pm || false)}
+                    ${createInfoRow('Фото профиля', user.photo_url ? 'есть' : 'нет')}
+                `;
+
+                // Информация о чате
+                const chatInfo = document.getElementById('chatInfo');
+                if (Object.keys(chat).length > 0) {
+                    chatInfo.innerHTML = `
+                        ${createInfoRow('ID чата', chat.id)}
+                        ${createInfoRow('Тип', chat.type)}
+                        ${createInfoRow('Название', chat.title)}
+                        ${createInfoRow('Username', chat.username ? '@' + chat.username : 'не указан')}
+                        ${createInfoRow('Фото', chat.photo_url ? 'есть' : 'нет')}
+                    `;
+                } else {
+                    chatInfo.innerHTML = '<div class="info-row">Чат не определен (личный чат)</div>';
+                }
+
+                // Параметры запуска
+                const startParamInfo = document.getElementById('startParamInfo');
+                startParamInfo.innerHTML = `
+                    ${createInfoRow('Start Param', initDataUnsafe.start_param || 'не указан')}
+                    ${createInfoRow('Auth Date', initDataUnsafe.auth_date ? new Date(initDataUnsafe.auth_date * 1000).toLocaleString() : 'не указан')}
+                    ${createInfoRow('Hash', initDataUnsafe.hash ? initDataUnsafe.hash.substring(0, 20) + '...' : 'не указан')}
+                    ${createInfoRow('Query ID', initDataUnsafe.query_id || 'не указан')}
+                    ${createInfoRow('Can send after', initDataUnsafe.can_send_after || 'сейчас')}
+                `;
+
+                // Тема оформления
+                const themeInfo = document.getElementById('themeInfo');
+                const themeParams = tg.themeParams || {};
+                themeInfo.innerHTML = `
+                    ${createInfoRow('Цвет фона', themeParams.bg_color || 'стандартный')}
+                    ${createInfoRow('Цвет текста', themeParams.text_color || 'стандартный')}
+                    ${createInfoRow('Цвет кнопки', themeParams.button_color || 'стандартный')}
+                    ${createInfoRow('Текст кнопки', themeParams.button_text_color || 'стандартный')}
+                    ${createInfoRow('Втор. фон', themeParams.secondary_bg_color || 'стандартный')}
+                    ${createInfoRow('Цвет подсказок', themeParams.hint_color || 'стандартный')}
+                    ${createInfoRow('Акцент', themeParams.accent_text_color || 'стандартный')}
+                    ${createInfoRow('Цвет ссылок', themeParams.link_color || 'стандартный')}
+                    ${createInfoRow('Цвет заголовков', themeParams.header_bg_color || 'стандартный')}
+                    ${createInfoRow('Цвет секций', themeParams.section_bg_color || 'стандартный')}
+                    ${createInfoRow('Разделитель', themeParams.section_separator_color || 'стандартный')}
+                    ${createInfoRow('Цвет подстроки', themeParams.subtitle_text_color || 'стандартный')}
+                    ${createInfoRow('Цвет уничтожения', themeParams.destructive_text_color || 'стандартный')}
+                `;
+
+                // Viewport информация
+                const viewportInfo = document.getElementById('viewportInfo');
+                viewportInfo.innerHTML = `
+                    ${createInfoRow('Высота', tg.viewportHeight + 'px')}
+                    ${createInfoRow('Высота (стаб.)', tg.viewportStableHeight + 'px')}
+                    ${createInfoRow('Полноэкранный', tg.isFullscreen || false)}
+                    ${createInfoRow('Верс. отображения', tg.isVersionAtLeast('6.0') ? '6.0+' : 'ниже 6.0')}
+                    ${createInfoRow('Вертикальные свайпы', tg.isVerticalSwipesEnabled ? 'включены' : 'отключены')}
+                    ${createInfoRow('Закрепление', tg.isClosingConfirmationEnabled ? 'включено' : 'отключено')}
+                    ${createInfoRow('Платформа', tg.platform || 'не определена')}
+                    ${createInfoRow('Версия', tg.version || 'не определена')}
+                `;
+
+                // Полные данные initData
+                document.getElementById('jsonData').textContent = JSON.stringify(initDataUnsafe, null, 2);
+
+                // Обработчик кнопки закрытия
+                document.getElementById('closeButton').addEventListener('click', function() {
+                    tg.close();
+                });
+
+                // Обработка изменения темы
+                tg.onEvent('themeChanged', function() {
+                    location.reload(); // Простой способ обновить цвета
+                });
+
+                // Обработка изменения viewport
+                tg.onEvent('viewportChanged', function(event) {
+                    const viewportInfo = document.getElementById('viewportInfo');
+                    viewportInfo.innerHTML = `
+                        ${createInfoRow('Высота', tg.viewportHeight + 'px')}
+                        ${createInfoRow('Высота (стаб.)', tg.viewportStableHeight + 'px')}
+                        ${createInfoRow('Изменение', event && event.isStateStable ? 'стабильно' : 'изменяется')}
+                    `;
+                });
+
+            } catch (error) {
+                updateStatus('Ошибка при получении данных: ' + error.message, true);
+                console.error('Telegram Mini App Error:', error);
+            }
+
+            // Дополнительная информация о настройках главной кнопки
+            try {
+                if (tg.MainButton) {
+                    console.log('MainButton available');
+                }
+            } catch (e) {
+                console.log('MainButton not available');
+            }
+        })();
+    </script>
+</body>
+</html>
