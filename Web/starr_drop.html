@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Starr Drop — Brawl Stars</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, 'Lilita One', 'Impact', sans-serif;
+            background: radial-gradient(circle at center, #2e7d32, #1b5e20);
+            transition: background 0.3s ease;
+        }
+
+        .drop-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* затемнение для плавности */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0);
+            pointer-events: none;
+            transition: background 0.4s ease;
+            z-index: 10;
+        }
+
+        /* анимированные лучи */
+        .rays {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
+            animation: rotateRays 12s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes rotateRays {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* текст редкости */
+        .rarity-text {
+            font-size: clamp(32px, 12vw, 80px);
+            color: #ffeb3b;
+            text-shadow: 4px 4px 0 #000;
+            margin-bottom: 20px;
+            z-index: 15;
+            letter-spacing: 3px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        /* Starr Drop звезда */
+        .starr-drop {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            cursor: pointer;
+            z-index: 20;
+            transition: transform 0.1s ease;
+            filter: drop-shadow(0 20px 20px rgba(0,0,0,0.5));
+        }
+        .starr-drop:active {
+            transform: scale(0.94);
+        }
+        .star-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* награда */
+        .reward-area {
+            margin-top: 30px;
+            font-size: clamp(28px, 8vw, 48px);
+            color: white;
+            text-shadow: 3px 3px 0 #000;
+            text-align: center;
+            z-index: 15;
+            background: rgba(0,0,0,0.6);
+            padding: 12px 24px;
+            border-radius: 60px;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s;
+        }
+
+        /* кнопка назад */
+        .back-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+            background: #ffb74d;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 20px;
+            color: #2c2c2c;
+            box-shadow: 0 5px 0 #e67e22;
+            cursor: pointer;
+            z-index: 25;
+            transition: 0.05s linear;
+        }
+        .back-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #e67e22;
+        }
+
+        @media (max-width: 500px) {
+            .starr-drop { width: 220px; height: 220px; }
+            .reward-area { font-size: 22px; padding: 8px 16px; margin-top: 20px; }
+            .back-btn { padding: 8px 20px; font-size: 18px; bottom: 20px; right: 15px; }
+        }
+    </style>
+</head>
+<body>
+<div class="drop-container">
+    <div class="rays"></div>
+    <div class="overlay" id="overlay"></div>
+    <div class="rarity-text" id="rarityText">STARR DROP</div>
+    <div class="starr-drop" id="starrDrop">
+        <img class="star-img" src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/icons/Starr_drop_01%20(2).png" alt="Starr Drop">
+    </div>
+    <div class="reward-area" id="rewardArea">нажми на звезду</div>
+    <button class="back-btn" id="backBtn">← В МЕНЮ</button>
+</div>
+
+<script>
+    (function() {
+        // Данные игрока
+        let playerData = {
+            trophies: 1250,
+            coins: 2450,
+            gems: 89,
+            powerPoints: 340,
+            bling: 520
+        };
+
+        // загружаем данные из sessionStorage (если есть)
+        const savedData = sessionStorage.getItem('brawl_return_data');
+        if(savedData) {
+            try {
+                playerData = JSON.parse(savedData);
+            } catch(e) {}
+        }
+
+        // ---------- ЗВУКИ ----------
+        let audioEnabled = false;
+        let tapSound = null;      // нажатие на звезду
+        let upgradeSound = null;  // клик по дропу
+        let raritySounds = {};
+
+        function initSounds() {
+            tapSound = new Audio('https://github.com/bahrstars/bahr-stars-web/raw/refs/heads/main/assets/audio/Tap.wav');
+            upgradeSound = new Audio('https://github.com/bahrstars/bahr-stars-web/raw/refs/heads/main/assets/audio/upgrade%20(2).wav');
+            tapSound.volume = 0.5;
+            upgradeSound.volume = 0.6;
+            // звуки редкостей
+            const rarities = ['Rare', 'Super rare', 'Epic', 'Mythic', 'Legendary'];
+            rarities.forEach(r => {
+                const audio = new Audio(`https://github.com/bahrstars/bahr-stars-web/raw/refs/heads/main/assets/audio/s_${r}.wav`);
+                audio.volume = 0.7;
+                raritySounds[r] = audio;
+            });
+        }
+
+        function playSound(soundObj) {
+            if(!audioEnabled || !soundObj) return;
+            soundObj.currentTime = 0;
+            soundObj.play().catch(e => console.log("sound blocked"));
+        }
+
+        function enableAudio() {
+            if(audioEnabled) return;
+            audioEnabled = true;
+            // пробуем проиграть тихий звук для активации аудиоконтекста
+            const dummy = new Audio('data:audio/wav;base64,U3RlYWx0aC1zb3VuZC1jbGljaw');
+            dummy.play().catch(()=>{});
+        }
+
+        // ---------- МЕХАНИКА STARR DROP ----------
+        const rarityLevels = [
+            { name: 'RARE', color: '#4caf50', bgStart: '#2e7d32', bgEnd: '#1b5e20', rewardMin: 50, rewardMax: 120 },
+            { name: 'SUPER RARE', color: '#2196f3', bgStart: '#0d47a1', bgEnd: '#0b2b6b', rewardMin: 100, rewardMax: 250 },
+            { name: 'EPIC', color: '#aa00ff', bgStart: '#6a1b9a', bgEnd: '#4a0072', rewardMin: 200, rewardMax: 450 },
+            { name: 'MYTHIC', color: '#ff4d4d', bgStart: '#b71c1c', bgEnd: '#8b0000', rewardMin: 350, rewardMax: 700 },
+            { name: 'LEGENDARY', color: '#ffd966', bgStart: '#ff8c00', bgEnd: '#c45c00', rewardMin: 600, rewardMax: 1200 }
+        ];
+
+        let currentRarityIndex = 0;
+        let isOpened = false;
+        let currentReward = 0;
+
+        function getRandomRarity() {
+            // шансы: Rare 45%, Super Rare 28%, Epic 15%, Mythic 8%, Legendary 4%
+            const rand = Math.random() * 100;
+            if(rand < 45) return 0;
+            if(rand < 73) return 1;
+            if(rand < 88) return 2;
+            if(rand < 96) return 3;
+            return 4;
+        }
+
+        function applyReward() {
+            const rarity = rarityLevels[currentRarityIndex];
+            currentReward = Math.floor(Math.random() * (rarity.rewardMax - rarity.rewardMin + 1) + rarity.rewardMin);
+            // начисляем монеты
+            playerData.coins += currentReward;
+            // сохраняем в sessionStorage для возврата
+            sessionStorage.setItem('brawl_return_data', JSON.stringify(playerData));
+            return currentReward;
+        }
+
+        function updateUIAfterOpen() {
+            const rarity = rarityLevels[currentRarityIndex];
+            document.getElementById('rarityText').innerText = rarity.name;
+            document.getElementById('rarityText').style.color = rarity.color;
+            document.body.style.background = `radial-gradient(circle at center, ${rarity.bgStart}, ${rarity.bgEnd})`;
+            document.getElementById('rewardArea').innerHTML = `🎁 +${currentReward} монет! 🎁`;
+            // эффект затемнения
+            const overlay = document.getElementById('overlay');
+            overlay.style.background = 'rgba(0,0,0,0.3)';
+            setTimeout(() => { overlay.style.background = 'rgba(0,0,0,0)'; }, 500);
+        }
+
+        function openStarrDrop() {
+            if(isOpened) return;
+            isOpened = true;
+
+            // звук нажатия на дроп (upgrade)
+            playSound(upgradeSound);
+
+            // определяем редкость
+            currentRarityIndex = getRandomRarity();
+            const rarityKey = rarityLevels[currentRarityIndex].name;
+            // проигрываем звук редкости
+            const raritySound = raritySounds[rarityKey];
+            if(raritySound) playSound(raritySound);
+
+            // начисляем награду
+            applyReward();
+            updateUIAfterOpen();
+
+            // сохраняем данные в localStorage тоже
+            localStorage.setItem('brawl_simulator_data', JSON.stringify(playerData));
+        }
+
+        // ---------- ВОЗВРАТ В МЕНЮ ----------
+        function goBack() {
+            // сохраняем финальные данные
+            localStorage.setItem('brawl_simulator_data', JSON.stringify(playerData));
+            window.location.href = 'index.html';
+        }
+
+        // ---------- ИНИЦИАЛИЗАЦИЯ ----------
+        function init() {
+            initSounds();
+            const starElement = document.getElementById('starrDrop');
+            starElement.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(!isOpened) {
+                    // первый тап — включаем аудио и открываем
+                    if(!audioEnabled) {
+                        enableAudio();
+                        // небольшой тап-звук тоже
+                        playSound(tapSound);
+                    }
+                    openStarrDrop();
+                }
+            });
+            document.getElementById('backBtn').addEventListener('click', goBack);
+
+            // автовключение аудио при любом касании страницы
+            const enableOnTouch = () => {
+                enableAudio();
+                document.removeEventListener('touchstart', enableOnTouch);
+                document.removeEventListener('click', enableOnTouch);
+            };
+            document.addEventListener('touchstart', enableOnTouch);
+            document.addEventListener('click', enableOnTouch);
+        }
+
+        init();
+    })();
+</script>
+</body>
+</html>
