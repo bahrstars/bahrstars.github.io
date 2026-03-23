@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Brawl Stars — Главное меню</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Lilita One', 'Impact', sans-serif;
+            background: #0b2b3b;
+        }
+
+        /* главный контейнер */
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: url('https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/mina_lobby.png') no-repeat center center;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+
+        /* затемнение для читаемости текста (опционально) */
+        .game-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.2);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ========= ВЕРХНЯЯ ПАНЕЛЬ ========= */
+        .top-bar {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: clamp(8px, 3vw, 16px) clamp(12px, 4vw, 24px);
+            gap: 8px;
+            flex-wrap: wrap;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.2));
+            backdrop-filter: blur(2px);
+        }
+
+        .profile-card {
+            display: flex;
+            align-items: center;
+            background: #1f2e3a;
+            border-radius: 60px;
+            padding: 4px 12px 4px 4px;
+            gap: 8px;
+            border: 2px solid #ffcd4a;
+            box-shadow: 0 4px 0 #7a4c1a;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            background: #f5b642;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            border: 2px solid white;
+        }
+
+        .exp-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .exp-info span:first-child {
+            font-size: 12px;
+            font-weight: bold;
+            color: #ffd966;
+        }
+
+        .exp-bar {
+            width: 70px;
+            height: 10px;
+            background: #2c3e2f;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .exp-fill {
+            width: 45%;
+            height: 100%;
+            background: #ffc107;
+            border-radius: 10px;
+        }
+
+        .resources {
+            display: flex;
+            gap: clamp(6px, 2vw, 14px);
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .resource-item {
+            background: #0f1a1fcc;
+            backdrop-filter: blur(8px);
+            padding: 6px 14px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+            text-shadow: 0 1px 2px black;
+            border: 1px solid rgba(255,215,0,0.5);
+        }
+
+        .resource-item img {
+            width: 24px;
+            height: 24px;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+        }
+
+        /* ========= ЦЕНТРАЛЬНЫЙ ПЕРСОНАЖ ========= */
+        .hero-area {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            min-height: 0;
+            pointer-events: none;
+        }
+
+        .hero-img {
+            max-width: 65%;
+            max-height: 55vh;
+            width: auto;
+            height: auto;
+            filter: drop-shadow(0 20px 15px rgba(0,0,0,0.4));
+            object-fit: contain;
+        }
+
+        /* ========= НАВИГАЦИОННЫЕ КНОПКИ (без рамок, чисто текстуры) ========= */
+        .bottom-nav {
+            position: relative;
+            z-index: 20;
+            display: flex;
+            justify-content: center;
+            gap: clamp(8px, 3vw, 20px);
+            padding: 12px 16px 25px;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            padding: 0;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            width: auto;
+        }
+
+        .nav-btn img {
+            height: clamp(48px, 12vw, 70px);
+            width: auto;
+            display: block;
+            filter: drop-shadow(0 6px 4px rgba(0,0,0,0.4));
+        }
+
+        .nav-btn:active {
+            transform: scale(0.94);
+        }
+
+        /* дополнительная кнопка Brawl Pass отдельно справа/слева (оставляем как было) */
+        .pass-button {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 25;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+        .pass-button img {
+            height: 70px;
+            width: auto;
+            filter: drop-shadow(0 6px 8px black);
+        }
+        .pass-button:active {
+            transform: scale(0.94);
+        }
+
+        /* модалка / уведомление (заглушка) */
+        .toast-msg {
+            position: fixed;
+            bottom: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c2c2cee;
+            backdrop-filter: blur(12px);
+            color: gold;
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 18px;
+            border: 2px solid #ffcd4a;
+            z-index: 200;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        @media (max-width: 600px) {
+            .resource-item span {
+                font-size: 12px;
+            }
+            .resource-item img {
+                width: 20px;
+                height: 20px;
+            }
+            .profile-card {
+                padding: 2px 10px 2px 2px;
+            }
+            .avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 22px;
+            }
+            .exp-bar {
+                width: 55px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .top-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .resources {
+                justify-content: center;
+            }
+            .pass-button img {
+                height: 55px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <!-- верхняя панель с профилем и ресурсами -->
+    <div class="top-bar">
+        <div class="profile-card">
+            <div class="avatar">⭐</div>
+            <div class="exp-info">
+                <span>УРОВЕНЬ 12</span>
+                <div class="exp-bar"><div class="exp-fill"></div></div>
+            </div>
+        </div>
+        <div class="resources">
+            <div class="resource-item"><img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/icons/Trophy.png" alt="трофеи"><span id="trophyCount">1250</span></div>
+            <div class="resource-item"><img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/icons/Coins_icon.png" alt="монеты"><span id="coinCount">2450</span></div>
+            <div class="resource-item"><img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/icons/Gems_icon%20(2).png" alt="гемы"><span id="gemCount">89</span></div>
+            <div class="resource-item"><img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/icons/Power%20Points_icon.png" alt="очки силы"><span id="powerPoints">340</span></div>
+            <div class="resource-item"><img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/icons/Blings_icon.png" alt="блинги"><span id="blingCount">520</span></div>
+        </div>
+    </div>
+
+    <!-- центральный персонаж (Мина) -->
+    <div class="hero-area">
+        <img class="hero-img" src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/mina_high_scorer_mina.png" alt="Mina">
+    </div>
+
+    <!-- Brawl Pass отдельная кнопка слева -->
+    <button class="pass-button" id="brawlPassBtn">
+        <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/ui/Pass%20(1).png" alt="Brawl Pass">
+    </button>
+
+    <!-- нижнее меню с текстурными кнопками (БЕЗ РАМОК) -->
+    <div class="bottom-nav">
+        <button class="nav-btn" data-action="shop">
+            <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/ui/Shop3.png" alt="Магазин">
+        </button>
+        <button class="nav-btn" data-action="brawlers">
+            <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/ui/Brawlers2.png" alt="Бойцы">
+        </button>
+        <button class="nav-btn" data-action="play">
+            <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/ui/Brawl.png" alt="Играть">
+        </button>
+        <button class="nav-btn" data-action="news">
+            <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/ui/News.png" alt="Новости">
+        </button>
+    </div>
+</div>
+
+<!-- всплывающее сообщение -->
+<div id="toastMsg" class="toast-msg"></div>
+
+<script>
+    (function() {
+        // ---------- ИГРОВЫЕ ДАННЫЕ (сохранение в localStorage) ----------
+        let playerData = {
+            trophies: 1250,
+            coins: 2450,
+            gems: 89,
+            powerPoints: 340,
+            bling: 520,
+            level: 12,
+            exp: 45
+        };
+
+        // загрузка сохранённых данных
+        function loadData() {
+            const saved = localStorage.getItem('brawl_simulator_data');
+            if(saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    playerData = { ...playerData, ...data };
+                } catch(e) {}
+            }
+            updateUI();
+        }
+
+        function saveData() {
+            localStorage.setItem('brawl_simulator_data', JSON.stringify(playerData));
+        }
+
+        function updateUI() {
+            document.getElementById('trophyCount').innerText = playerData.trophies;
+            document.getElementById('coinCount').innerText = playerData.coins;
+            document.getElementById('gemCount').innerText = playerData.gems;
+            document.getElementById('powerPoints').innerText = playerData.powerPoints;
+            document.getElementById('blingCount').innerText = playerData.bling;
+            // при желании обновить exp bar
+            const expFill = document.querySelector('.exp-fill');
+            if(expFill) expFill.style.width = `${playerData.exp}%`;
+        }
+
+        // ---------- АУДИО (автовоспроизведение после первого взаимодействия) ----------
+        let bgMusic = null;
+        let audioEnabled = false;
+        let clickSound = null;
+
+        function initAudio() {
+            if(bgMusic) return;
+            bgMusic = new Audio('https://github.com/bahrstars/bahr-stars-web/raw/refs/heads/main/assets/audio/music/StarrPark.mp3');
+            bgMusic.loop = true;
+            bgMusic.volume = 0.5;
+            // короткий клик (создаем буфер для простоты)
+            clickSound = new Audio('data:audio/wav;base64,U3RlYWx0aC1zb3VuZC1jbGljaw'); // заглушка, но сделаем реальный beep через Web Audio? 
+            // но для простоты используем пустой звук если нет ссылки, но дадим системный писк? не обязательно.
+        }
+
+        function enableAudioAndPlay() {
+            if(!audioEnabled && bgMusic) {
+                bgMusic.play().then(() => {
+                    audioEnabled = true;
+                }).catch(e => console.log('audio autoplay blocked, waiting for user interaction'));
+            }
+        }
+
+        // воспроизведение клика (короткий звук если есть возможность)
+        function playClickSound() {
+            if(!audioEnabled) return;
+            try {
+                if(clickSound) {
+                    clickSound.currentTime = 0;
+                    clickSound.play().catch(e=>{});
+                } else {
+                    // создадим звук из простого генератора (не обязательно)
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    oscillator.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    oscillator.frequency.value = 880;
+                    gain.gain.value = 0.2;
+                    oscillator.start();
+                    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.2);
+                    oscillator.stop(audioCtx.currentTime + 0.2);
+                }
+            } catch(err) {}
+        }
+
+        // показ уведомления
+        function showMessage(text, isError = false) {
+            const toast = document.getElementById('toastMsg');
+            toast.style.backgroundColor = isError ? '#a1221acc' : '#2c2c2cee';
+            toast.style.color = isError ? '#ffb3b3' : '#ffd966';
+            toast.innerText = text;
+            toast.style.opacity = '1';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 1800);
+        }
+
+        // ----- ЛОГИКА ДЛЯ КНОПОК (переходы + демо-функции, добавляем ресурсы)-----
+        function handleShop() {
+            playClickSound();
+            showMessage('🛒 Магазин: здесь будут наборы и боксы (скоро)');
+            // можно добавить начисление тестовых монет для демки
+            // но пока просто имитация
+        }
+
+        function handleBrawlers() {
+            playClickSound();
+            showMessage('🤠 КОЛЛЕКЦИЯ БОЙЦОВ: 18/78 открыто');
+        }
+
+        function handlePlay() {
+            playClickSound();
+            showMessage('🎲 СИМУЛЯЦИЯ СТАРДРОПА! +50 монет');
+            // награда за нажатие "ИГРАТЬ" — имитация открытия дропа
+            playerData.coins += 50;
+            playerData.trophies += 5;
+            saveData();
+            updateUI();
+            showMessage('✨ +50 монет! +5 трофеев ✨');
+        }
+
+        function handleNews() {
+            playClickSound();
+            showMessage('📰 Новости: Ивент "Звёздные бои" уже здесь!');
+        }
+
+        function handleBrawlPass() {
+            playClickSound();
+            showMessage('🎫 BRAWL PASS: награды ждут! +100 очков силы');
+            playerData.powerPoints += 100;
+            playerData.gems += 5;
+            saveData();
+            updateUI();
+            showMessage('🎁 +100 Очков силы, +5 кристаллов!');
+        }
+
+        // назначаем обработчики
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const action = btn.getAttribute('data-action');
+                if(action === 'shop') handleShop();
+                else if(action === 'brawlers') handleBrawlers();
+                else if(action === 'play') handlePlay();
+                else if(action === 'news') handleNews();
+                // после клика включаем звук если еще не включен
+                if(!audioEnabled && bgMusic) {
+                    bgMusic.play().then(()=> audioEnabled=true).catch(()=>{});
+                }
+            });
+        });
+
+        const passBtn = document.getElementById('brawlPassBtn');
+        if(passBtn) {
+            passBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleBrawlPass();
+                if(!audioEnabled && bgMusic) {
+                    bgMusic.play().then(()=> audioEnabled=true).catch(()=>{});
+                }
+            });
+        }
+
+        // инициализация музыки и включение при первом касании в любом месте
+        function globalEnableAudio() {
+            if(!bgMusic) initAudio();
+            if(bgMusic && !audioEnabled) {
+                bgMusic.play().then(() => {
+                    audioEnabled = true;
+                }).catch(err => console.warn('audio play failed', err));
+            }
+            document.removeEventListener('touchstart', globalEnableAudio);
+            document.removeEventListener('click', globalEnableAudio);
+        }
+
+        // загружаем данные
+        loadData();
+        initAudio();
+
+        // ждём взаимодействия, чтобы запустить фоновую музыку (браузер политика)
+        document.addEventListener('touchstart', globalEnableAudio, { once: false });
+        document.addEventListener('click', globalEnableAudio, { once: false });
+        // также даем возможность запуска сразу после загрузки страницы, если разрешено
+        setTimeout(() => {
+            if(!audioEnabled && bgMusic) {
+                // попытка автоматического воспроизведения (но часто блокируется)
+                bgMusic.play().catch(e=>console.log("auto-blocked, waiting for tap"));
+            }
+        }, 500);
+    })();
+</script>
+</body>
+</html>
