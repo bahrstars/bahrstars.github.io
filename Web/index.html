@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Brawl Stars — Starr Drop Simulator</title>
+    <title>Brawl Stars — Главное меню</title>
     <style>
         * {
             margin: 0;
@@ -21,7 +21,6 @@
             background: #0b2b3b;
         }
 
-        /* главный контейнер */
         .game-container {
             position: relative;
             width: 100%;
@@ -30,10 +29,10 @@
             background-size: cover;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
             overflow: hidden;
         }
 
-        /* затемнение */
         .game-container::before {
             content: '';
             position: absolute;
@@ -50,38 +49,31 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 16px;
+            padding: 8px 12px;
             gap: 8px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.1));
-            backdrop-filter: blur(2px);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4), transparent);
         }
 
         .left-profile {
             display: flex;
             align-items: center;
-            gap: 12px;
-        }
-
-        .profile-card {
-            display: flex;
-            align-items: center;
-            background: #1f2e3a;
-            border-radius: 60px;
-            padding: 3px 10px 3px 3px;
-            gap: 8px;
-            border: 2px solid #ffcd4a;
-            box-shadow: 0 2px 0 #7a4c1a;
+            gap: 10px;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            padding: 4px 12px 4px 4px;
+            border-radius: 40px;
+            border: 1px solid rgba(255,200,50,0.6);
         }
 
         .avatar {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             background: #f5b642;
             border-radius: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 24px;
             border: 2px solid white;
         }
 
@@ -98,7 +90,7 @@
 
         .exp-bar {
             width: 60px;
-            height: 8px;
+            height: 6px;
             background: #2c3e2f;
             border-radius: 10px;
             overflow: hidden;
@@ -113,18 +105,17 @@
         }
 
         .trophy-badge {
-            background: #0f1a1fcc;
-            backdrop-filter: blur(8px);
-            padding: 4px 12px;
-            border-radius: 40px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            padding: 4px 10px;
+            border-radius: 40px;
             font-weight: bold;
             font-size: 14px;
-            color: white;
-            text-shadow: 0 1px 2px black;
-            border: 1px solid rgba(255,215,0,0.5);
+            color: #ffd966;
+            border: 1px solid rgba(255,200,50,0.5);
         }
 
         .trophy-badge img {
@@ -134,22 +125,24 @@
 
         .resources {
             display: flex;
-            gap: 8px;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
 
         .resource-item {
-            background: #0f1a1fcc;
-            backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
             padding: 4px 10px;
             border-radius: 40px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             font-weight: bold;
             font-size: 12px;
             color: white;
             text-shadow: 0 1px 2px black;
-            border: 1px solid rgba(255,215,0,0.5);
+            border: 1px solid rgba(255,215,0,0.3);
         }
 
         .resource-item img {
@@ -171,15 +164,15 @@
         }
 
         .hero-img {
-            max-width: 60%;
-            max-height: 50vh;
+            max-width: 70%;
+            max-height: 55vh;
             width: auto;
             height: auto;
             filter: drop-shadow(0 15px 10px rgba(0,0,0,0.4));
             object-fit: contain;
         }
 
-        /* ========= КНОПКА BRAWL PASS (УВЕЛИЧЕННАЯ) ========= */
+        /* ========= КНОПКА BRAWL PASS (УВЕЛИЧЕНА) ========= */
         .pass-button {
             position: absolute;
             bottom: 20px;
@@ -193,21 +186,21 @@
         .pass-button img {
             height: 85px;
             width: auto;
-            filter: drop-shadow(0 6px 8px black);
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.5));
         }
         .pass-button:active {
             transform: scale(0.94);
         }
 
-        /* ========= НИЖНЕЕ МЕНЮ (СПРАВА НАЛЕВО) ========= */
+        /* ========= НИЖНЕЕ МЕНЮ (СПРАВА НАЛЕВО: ИГРАТЬ, БОЙЦЫ, МАГАЗИН, НОВОСТИ) ========= */
         .bottom-nav {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
+            position: relative;
             z-index: 20;
             display: flex;
+            justify-content: flex-end;
             gap: 12px;
-            background: none;
+            padding: 12px 20px 25px;
+            background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
         }
 
         .nav-btn {
@@ -216,198 +209,80 @@
             cursor: pointer;
             transition: transform 0.1s ease;
             padding: 0;
-            display: inline-flex;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .nav-btn img {
-            height: 60px;
+            height: clamp(52px, 11vw, 70px);
             width: auto;
             display: block;
-            filter: drop-shadow(0 6px 4px rgba(0,0,0,0.4));
+            filter: drop-shadow(0 6px 6px rgba(0,0,0,0.4));
         }
 
         .nav-btn:active {
             transform: scale(0.94);
         }
 
-        /* ========= МОДАЛЬНОЕ ОКНО STARR DROP ========= */
-        .starrdrop-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
-            cursor: pointer;
-        }
+        /* порядок кнопок через flex order */
+        .nav-btn[data-action="play"] { order: 4; }
+        .nav-btn[data-action="brawlers"] { order: 3; }
+        .nav-btn[data-action="shop"] { order: 2; }
+        .nav-btn[data-action="news"] { order: 1; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .starrdrop-content {
-            text-align: center;
-            transform: scale(0.9);
-            animation: scaleIn 0.3s ease forwards;
-        }
-
-        @keyframes scaleIn {
-            to { transform: scale(1); }
-        }
-
-        .starrdrop-image {
-            width: 280px;
-            height: 280px;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
-        }
-
-        .starrdrop-image:active {
-            transform: scale(0.95);
-        }
-
-        .rarity-text {
-            font-size: 48px;
-            font-weight: bold;
-            color: #ffeb3b;
-            text-shadow: 4px 4px 0 #000;
-            margin-top: 20px;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-        }
-
-        .reward-info {
-            font-size: 32px;
-            color: white;
-            text-shadow: 2px 2px 0 #000;
-            margin-top: 20px;
-            background: rgba(0,0,0,0.6);
-            padding: 10px 20px;
-            border-radius: 60px;
-            display: inline-block;
-        }
-
-        /* ========= УВЕДОМЛЕНИЯ (ПЛАВНЫЕ) ========= */
+        /* ========= УВЕДОМЛЕНИЕ (ПЛАВНОЕ, БЕЗ ЗАДНИКА) ========= */
         .notification {
             position: fixed;
-            top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            top: 40%;
+            transform: translateX(-50%) translateY(0);
             color: white;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
+            text-shadow: 0 0 15px rgba(0,0,0,0.8);
             text-align: center;
-            text-shadow: 0 0 10px rgba(0,0,0,0.5);
-            z-index: 2000;
+            z-index: 200;
             pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.3s ease;
             white-space: nowrap;
-            animation: floatUp 1.5s ease-out forwards;
+            background: transparent;
+            backdrop-filter: none;
+            padding: 8px 20px;
+            border-radius: 60px;
         }
-
-        @keyframes floatUp {
-            0% {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.9);
-            }
-            15% {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-            }
-            85% {
-                opacity: 1;
-                transform: translate(-50%, -70%) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translate(-50%, -100%) scale(0.9);
-                display: none;
-            }
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-30px);
         }
 
         @media (max-width: 600px) {
-            .resource-item span {
-                font-size: 11px;
-            }
-            .resource-item img {
-                width: 16px;
-                height: 16px;
-            }
-            .avatar {
-                width: 32px;
-                height: 32px;
-                font-size: 18px;
-            }
-            .exp-bar {
-                width: 50px;
-            }
-            .trophy-badge {
-                font-size: 12px;
-                padding: 3px 8px;
-            }
-            .trophy-badge img {
-                width: 16px;
-                height: 16px;
-            }
-            .nav-btn img {
-                height: 50px;
-            }
-            .pass-button img {
-                height: 70px;
-            }
-            .starrdrop-image {
-                width: 220px;
-                height: 220px;
-            }
-            .rarity-text {
-                font-size: 36px;
-            }
-            .reward-info {
-                font-size: 24px;
-            }
-            .notification {
-                font-size: 22px;
-                white-space: nowrap;
-            }
+            .resource-item span { font-size: 10px; }
+            .resource-item img { width: 14px; height: 14px; }
+            .trophy-badge { font-size: 12px; padding: 3px 8px; }
+            .trophy-badge img { width: 16px; height: 16px; }
+            .avatar { width: 32px; height: 32px; font-size: 20px; }
+            .exp-bar { width: 50px; }
+            .pass-button img { height: 70px; }
+            .notification { font-size: 18px; white-space: nowrap; top: 35%; }
         }
-
         @media (max-width: 480px) {
-            .top-bar {
-                padding: 6px 12px;
-            }
-            .resources {
-                gap: 4px;
-            }
-            .resource-item {
-                padding: 3px 8px;
-            }
-            .bottom-nav {
-                gap: 8px;
-            }
-            .nav-btn img {
-                height: 45px;
-            }
-            .pass-button img {
-                height: 60px;
-            }
+            .top-bar { flex-wrap: wrap; justify-content: center; gap: 6px; }
+            .resources { justify-content: center; }
+            .notification { font-size: 16px; white-space: nowrap; top: 30%; }
+            .nav-btn img { height: 48px; }
+            .bottom-nav { gap: 8px; padding: 8px 12px 20px; }
         }
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    <!-- УМЕНЬШЕННАЯ ВЕРХНЯЯ ПАНЕЛЬ -->
+    <!-- ВЕРХНЯЯ ПАНЕЛЬ (УМЕНЬШЕНА) -->
     <div class="top-bar">
-        <div class="left-profile">
-            <div class="profile-card">
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <div class="left-profile">
                 <div class="avatar">⭐</div>
                 <div class="exp-info">
                     <span>УРОВЕНЬ 12</span>
@@ -415,8 +290,7 @@
                 </div>
             </div>
             <div class="trophy-badge">
-                <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/icons/Trophy.png" alt="трофеи">
-                <span id="trophyCount">1250</span>
+                <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/icons/Trophy.png" alt="🏆"> <span id="trophyCount">1250</span>
             </div>
         </div>
         <div class="resources">
@@ -427,32 +301,35 @@
         </div>
     </div>
 
-    <!-- центральный персонаж -->
+    <!-- ЦЕНТРАЛЬНЫЙ ПЕРСОНАЖ -->
     <div class="hero-area">
         <img class="hero-img" src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/mina_high_scorer_mina.png" alt="Mina">
     </div>
 
-    <!-- Brawl Pass кнопка (увеличенная) -->
+    <!-- Brawl Pass (увеличен) -->
     <button class="pass-button" id="brawlPassBtn">
         <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/ui/Pass%20(1).png" alt="Brawl Pass">
     </button>
 
-    <!-- нижнее меню справа налево: Играть, Бойцы, Магазин, Новости -->
+    <!-- НИЖНЕЕ МЕНЮ (справа налево: Играть, Бойцы, Магазин, Новости) -->
     <div class="bottom-nav">
-        <button class="nav-btn" data-action="news">
-            <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/ui/News.png" alt="Новости">
-        </button>
-        <button class="nav-btn" data-action="shop">
-            <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/ui/Shop3.png" alt="Магазин">
+        <button class="nav-btn" data-action="play">
+            <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/ui/Brawl.png" alt="Играть">
         </button>
         <button class="nav-btn" data-action="brawlers">
             <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/ui/Brawlers2.png" alt="Бойцы">
         </button>
-        <button class="nav-btn" data-action="play">
-            <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/ui/Brawl.png" alt="Играть">
+        <button class="nav-btn" data-action="shop">
+            <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/ui/Shop3.png" alt="Магазин">
+        </button>
+        <button class="nav-btn" data-action="news">
+            <img src="https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/ui/News.png" alt="Новости">
         </button>
     </div>
 </div>
+
+<!-- Элемент уведомления -->
+<div id="notification" class="notification"></div>
 
 <script>
     (function() {
@@ -467,206 +344,6 @@
             exp: 45
         };
 
-        // ---------- ЗВУКИ ----------
-        let audioEnabled = false;
-        let tapSound = null;
-        let upgradeSound = null;
-        let rareSounds = {};
-
-        function initSounds() {
-            tapSound = new Audio('https://github.com/bahrstars/bahr-stars-web/raw/refs/heads/main/assets/audio/Tap.wav');
-            upgradeSound = new Audio('https://github.com/bahrstars/bahr-stars-web/raw/refs/heads/main/assets/audio/upgrade%20(2).wav');
-            
-            const rarities = ['Rare', 'Super rare', 'Epic', 'Mythic', 'Legendary'];
-            rarities.forEach(rarity => {
-                const sound = new Audio(`https://github.com/bahrstars/bahr-stars-web/raw/refs/heads/main/assets/audio/s_${rarity}.wav`);
-                rareSounds[rarity] = sound;
-            });
-        }
-
-        function playTapSound() {
-            if (!audioEnabled) return;
-            if (tapSound) {
-                tapSound.currentTime = 0;
-                tapSound.play().catch(e => console.log('tap sound error'));
-            }
-        }
-
-        function playUpgradeSound() {
-            if (!audioEnabled) return;
-            if (upgradeSound) {
-                upgradeSound.currentTime = 0;
-                upgradeSound.play().catch(e => console.log('upgrade sound error'));
-            }
-        }
-
-        function playRaritySound(rarity) {
-            if (!audioEnabled) return;
-            const sound = rareSounds[rarity];
-            if (sound) {
-                sound.currentTime = 0;
-                sound.play().catch(e => console.log('rarity sound error'));
-            }
-        }
-
-        // ---------- УВЕДОМЛЕНИЯ (ПЛАВНЫЕ) ----------
-        function showNotification(message) {
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification && notification.remove) {
-                    notification.remove();
-                }
-            }, 1500);
-        }
-
-        // ---------- STARR DROP МЕХАНИКА ----------
-        const rarityLevels = [
-            { name: 'Rare', min: 0, max: 45, color: '#5cb85c', rewardMultiplier: 1 },
-            { name: 'Super rare', min: 45, max: 70, color: '#31b3ff', rewardMultiplier: 1.5 },
-            { name: 'Epic', min: 70, max: 85, color: '#a652ff', rewardMultiplier: 2 },
-            { name: 'Mythic', min: 85, max: 96, color: '#ff4d4d', rewardMultiplier: 3 },
-            { name: 'Legendary', min: 96, max: 100, color: '#ffeb3b', rewardMultiplier: 5 }
-        ];
-
-        function getRandomRarity() {
-            const random = Math.random() * 100;
-            for (let rarity of rarityLevels) {
-                if (random >= rarity.min && random < rarity.max) {
-                    return rarity;
-                }
-            }
-            return rarityLevels[0];
-        }
-
-        function getRandomReward(rarity) {
-            const rewards = [
-                { type: 'coins', min: 50, max: 200, name: 'Монеты' },
-                { type: 'gems', min: 2, max: 15, name: 'Кристаллы' },
-                { type: 'powerPoints', min: 20, max: 100, name: 'Очки силы' },
-                { type: 'bling', min: 30, max: 150, name: 'Блинги' },
-                { type: 'trophies', min: 5, max: 25, name: 'Трофеи' }
-            ];
-            
-            const reward = rewards[Math.floor(Math.random() * rewards.length)];
-            let amount = Math.floor(Math.random() * (reward.max - reward.min + 1) + reward.min);
-            amount = Math.floor(amount * rarity.rewardMultiplier);
-            
-            return { ...reward, amount };
-        }
-
-        function applyReward(reward) {
-            switch(reward.type) {
-                case 'coins':
-                    playerData.coins += reward.amount;
-                    break;
-                case 'gems':
-                    playerData.gems += reward.amount;
-                    break;
-                case 'powerPoints':
-                    playerData.powerPoints += reward.amount;
-                    break;
-                case 'bling':
-                    playerData.bling += reward.amount;
-                    break;
-                case 'trophies':
-                    playerData.trophies += reward.amount;
-                    break;
-            }
-            saveData();
-            updateUI();
-        }
-
-        // ---------- STARR DROP МОДАЛКА ----------
-        let isDropOpen = false;
-
-        function openStarrDrop() {
-            if (isDropOpen) return;
-            isDropOpen = true;
-            playTapSound();
-            
-            const modal = document.createElement('div');
-            modal.className = 'starrdrop-modal';
-            
-            const content = document.createElement('div');
-            content.className = 'starrdrop-content';
-            
-            const dropImg = document.createElement('img');
-            dropImg.src = 'https://raw.githubusercontent.com/bahrstars/bahr-stars-web/refs/heads/main/assets/icons/Starr_drop_01%20(2).png';
-            dropImg.className = 'starrdrop-image';
-            dropImg.alt = 'Starr Drop';
-            
-            const rarityText = document.createElement('div');
-            rarityText.className = 'rarity-text';
-            rarityText.textContent = '???';
-            
-            content.appendChild(dropImg);
-            content.appendChild(rarityText);
-            modal.appendChild(content);
-            document.body.appendChild(modal);
-            
-            let canClick = true;
-            let rarityResult = null;
-            let rewardResult = null;
-            
-            const handleDropClick = () => {
-                if (!canClick) return;
-                canClick = false;
-                playUpgradeSound();
-                
-                rarityResult = getRandomRarity();
-                rewardResult = getRandomReward(rarityResult);
-                
-                rarityText.textContent = rarityResult.name.toUpperCase();
-                rarityText.style.color = rarityResult.color;
-                
-                playRaritySound(rarityResult.name);
-                
-                const rewardDiv = document.createElement('div');
-                rewardDiv.className = 'reward-info';
-                rewardDiv.textContent = `+${rewardResult.amount} ${rewardResult.name}`;
-                content.appendChild(rewardDiv);
-                
-                setTimeout(() => {
-                    applyReward(rewardResult);
-                    showNotification(`✨ +${rewardResult.amount} ${rewardResult.name} ✨`);
-                    
-                    setTimeout(() => {
-                        modal.remove();
-                        isDropOpen = false;
-                    }, 1500);
-                }, 800);
-            };
-            
-            dropImg.addEventListener('click', handleDropClick);
-            
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal && !canClick) {
-                    // предотвращаем закрытие во время анимации
-                } else if (e.target === modal && canClick) {
-                    handleDropClick();
-                }
-            });
-        }
-
-        // ---------- ОБНОВЛЕНИЕ UI ----------
-        function updateUI() {
-            document.getElementById('trophyCount').innerText = playerData.trophies;
-            document.getElementById('coinCount').innerText = playerData.coins;
-            document.getElementById('gemCount').innerText = playerData.gems;
-            document.getElementById('powerPoints').innerText = playerData.powerPoints;
-            document.getElementById('blingCount').innerText = playerData.bling;
-            const expFill = document.querySelector('.exp-fill');
-            if(expFill) expFill.style.width = `${Math.min(100, playerData.exp)}%`;
-        }
-
-        function saveData() {
-            localStorage.setItem('brawl_simulator_data', JSON.stringify(playerData));
-        }
-
         function loadData() {
             const saved = localStorage.getItem('brawl_simulator_data');
             if(saved) {
@@ -678,86 +355,131 @@
             updateUI();
         }
 
-        // ---------- ОБРАБОТЧИКИ КНОПОК ----------
+        function saveData() {
+            localStorage.setItem('brawl_simulator_data', JSON.stringify(playerData));
+        }
+
+        function updateUI() {
+            document.getElementById('trophyCount').innerText = playerData.trophies;
+            document.getElementById('coinCount').innerText = playerData.coins;
+            document.getElementById('gemCount').innerText = playerData.gems;
+            document.getElementById('powerPoints').innerText = playerData.powerPoints;
+            document.getElementById('blingCount').innerText = playerData.bling;
+            const expFill = document.querySelector('.exp-fill');
+            if(expFill) expFill.style.width = `${Math.min(100, playerData.exp)}%`;
+        }
+
+        // ---------- АУДИО ----------
+        let bgMusic = null;
+        let audioEnabled = false;
+        let tapSound = null;
+
+        function initAudio() {
+            if(bgMusic) return;
+            bgMusic = new Audio('https://github.com/bahrstars/bahr-stars-web/raw/refs/heads/main/assets/audio/music/StarrPark.mp3');
+            bgMusic.loop = true;
+            bgMusic.volume = 0.5;
+            tapSound = new Audio('https://github.com/bahrstars/bahr-stars-web/raw/refs/heads/main/assets/audio/Tap.wav');
+            tapSound.volume = 0.6;
+        }
+
+        function playTap() {
+            if(!audioEnabled) return;
+            if(tapSound) {
+                tapSound.currentTime = 0;
+                tapSound.play().catch(e => console.log("tap sound blocked"));
+            }
+        }
+
+        function enableAudioAndPlay() {
+            if(!audioEnabled && bgMusic) {
+                bgMusic.play().then(() => {
+                    audioEnabled = true;
+                }).catch(e => console.log('audio autoplay blocked'));
+            }
+        }
+
+        // ---------- УВЕДОМЛЕНИЕ (ПЛАВНОЕ) ----------
+        let notificationTimeout = null;
+        function showMessage(text) {
+            const notif = document.getElementById('notification');
+            if(notificationTimeout) clearTimeout(notificationTimeout);
+            notif.innerText = text;
+            notif.classList.remove('show');
+            void notif.offsetWidth; // рефлоу
+            notif.classList.add('show');
+            notificationTimeout = setTimeout(() => {
+                notif.classList.remove('show');
+            }, 1800);
+        }
+
+        // ---------- ОТКРЫТИЕ STARR DROP (отдельная страница) ----------
+        function openStarrDrop() {
+            playTap();
+            // сохраняем данные перед переходом
+            saveData();
+            // переходим на страницу дропа, передаём данные через sessionStorage
+            sessionStorage.setItem('brawl_return_data', JSON.stringify(playerData));
+            window.location.href = 'starr_drop.html';
+        }
+
+        // ---------- ДРУГИЕ КНОПКИ ----------
         function handleShop() {
-            playTapSound();
-            showNotification('🛒 Магазин скоро откроется!');
+            playTap();
+            showMessage('🛒 МАГАЗИН: скоро здесь появятся наборы');
         }
-
         function handleBrawlers() {
-            playTapSound();
-            showNotification('🤠 Коллекция бойцов: 18/78');
+            playTap();
+            showMessage('🤠 КОЛЛЕКЦИЯ: 18/78 бойцов');
         }
-
-        function handlePlay() {
-            playTapSound();
-            openStarrDrop();
-        }
-
         function handleNews() {
-            playTapSound();
-            showNotification('📰 Новости: Звёздный ивент начался!');
+            playTap();
+            showMessage('📰 НОВОСТИ: Ивент "Звёздная буря" начался!');
         }
-
         function handleBrawlPass() {
-            playTapSound();
-            showNotification('🎫 Brawl Pass: +100 очков силы, +5 кристаллов');
+            playTap();
+            showMessage('🎫 BRAWL PASS: +100 очков силы');
             playerData.powerPoints += 100;
             playerData.gems += 5;
             saveData();
             updateUI();
         }
 
-        // ---------- АУДИО ИНИЦИАЛИЗАЦИЯ ----------
-        function enableAudioAndPlay() {
-            if (!audioEnabled) {
-                audioEnabled = true;
-                // пробуем воспроизвести тихий звук для активации
-                const silentAudio = new Audio('data:audio/wav;base64,U3RlYWx0aC1zb3VuZC1jbGljaw');
-                silentAudio.play().catch(() => {});
-            }
-        }
-
-        // ---------- НАЗНАЧЕНИЕ ОБРАБОТЧИКОВ ----------
+        // назначение обработчиков
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const action = btn.getAttribute('data-action');
-                if(action === 'shop') handleShop();
+                if(action === 'play') openStarrDrop();
+                else if(action === 'shop') handleShop();
                 else if(action === 'brawlers') handleBrawlers();
-                else if(action === 'play') handlePlay();
                 else if(action === 'news') handleNews();
-                enableAudioAndPlay();
+                if(!audioEnabled && bgMusic) bgMusic.play().catch(()=>{});
             });
         });
 
-        const passBtn = document.getElementById('brawlPassBtn');
-        if(passBtn) {
-            passBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                handleBrawlPass();
-                enableAudioAndPlay();
-            });
-        }
+        document.getElementById('brawlPassBtn').addEventListener('click', () => {
+            handleBrawlPass();
+            if(!audioEnabled && bgMusic) bgMusic.play().catch(()=>{});
+        });
 
-        // Глобальная активация звука при первом касании
+        // глобальное включение аудио
         function globalEnableAudio() {
-            enableAudioAndPlay();
+            if(!bgMusic) initAudio();
+            if(bgMusic && !audioEnabled) {
+                bgMusic.play().then(() => audioEnabled = true).catch(()=>{});
+            }
             document.removeEventListener('touchstart', globalEnableAudio);
             document.removeEventListener('click', globalEnableAudio);
         }
 
-        // Инициализация
         loadData();
-        initSounds();
-        
-        document.addEventListener('touchstart', globalEnableAudio, { once: false });
-        document.addEventListener('click', globalEnableAudio, { once: false });
-        
-        // Пробуем активировать звук при загрузке
+        initAudio();
+        document.addEventListener('touchstart', globalEnableAudio);
+        document.addEventListener('click', globalEnableAudio);
         setTimeout(() => {
-            enableAudioAndPlay();
-        }, 1000);
+            if(bgMusic && !audioEnabled) bgMusic.play().catch(()=>{});
+        }, 500);
     })();
 </script>
 </body>
