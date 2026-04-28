@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приёмник сообщений из TurboWarp</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #4CAF50; font-size: 20px; margin-top: 0; }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { background: #45a049; }
+        .message-area {
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 10px;
+            margin: 15px 0;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        .badge {
+            display: inline-block;
+            background: #2196F3;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📡 Связь с TurboWarp</h1>
+    <p><span class="badge">iframe</span> Этот сайт работает внутри iframe в TurboWarp</p>
+    
+    <h3>📨 Полученные сообщения:</h3>
+    <div id="incoming" class="message-area">Ожидание сообщений...</div>
+    
+    <h3>📤 Отправить в TurboWarp:</h3>
+    <input type="text" id="outgoingMsg" placeholder="Введите текст..." value="Привет из iframe!">
+    <button onclick="sendMessage()">Отправить текст</button>
+    <button onclick="sendJson()">Отправить как JSON</button>
+    
+    <h3>💾 Локальное хранилище (localStorage):</h3>
+    <button onclick="saveData()">Сохранить последнее сообщение</button>
+    <button onclick="loadData()">Загрузить из localStorage</button>
+    <div id="storageStatus" class="message-area" style="background:#fff3e0; border-left-color:#ff9800;"></div>
+</div>
+
+<script>
+    // === ПРИЁМ СООБЩЕНИЙ ИЗ TURBOWARP ===
+    window.addEventListener('message', function(event) {
+        // Проверяем, что сообщение от TurboWarp (можно раскомментировать для точной проверки)
+        // if (event.origin !== 'https://turbowarp.org') return;
+        
+        console.log('Получено сообщение:', event.data);
+        
+        if (event.data.type === 'FROM_TURBOWARP') {
+            // Обычное текстовое сообщение
+            displayIncomingMessage('📨 Текст: ' + event.data.payload);
+            
+            // Можно сохранить автоматически в localStorage
+            localStorage.setItem('lastFromTurboWarp', event.data.payload);
+            
+        } else if (event.data.type === 'FROM_TURBOWARP_JSON') {
+            // JSON сообщение
+            displayIncomingMessage('📦 JSON: ' + JSON.stringify(event.data.payload));
+            localStorage.setItem('lastJsonFromTurboWarp', JSON.stringify(event.data.payload));
+        }
+    });
+    
+    function displayIncomingMessage(text) {
+        const div = document.getElementById('incoming');
+        const time = new Date().toLocaleTimeString();
+        div.innerHTML = `<strong>[${time}]</strong> ${text}<br>${div.innerHTML}`;
+        if (div.innerHTML.split('<br>').length > 10) {
+            // Оставляем только последние 10 сообщений
+            div.innerHTML = div.innerHTML.split('<br>').slice(0, 10).join('<br>');
+        }
+    }
+    
+    // === ОТПРАВКА В TURBOWARP ===
+    function sendMessage() {
+        const msg = document.getElementById('outgoingMsg').value;
+        window.parent.postMessage({
+            type: 'FROM_IFRAME',
+            payload: msg,
+            timestamp: Date.now()
+        }, '*');
+        displayIncomingMessage('✉️ Отправлено в TurboWarp: ' + msg);
+    }
+    
+    function sendJson() {
+        const msg = document.getElementById('outgoingMsg').value;
+        window.parent.postMessage({
+            type: 'FROM_IFRAME_JSON',
+            payload: { text: msg, from: 'iframe', time: new Date().toISOString() }
+        }, '*');
+        displayIncomingMessage('📤 Отправлен JSON в TurboWarp');
+    }
+    
+    // === РАБОТА С LOCALSTORAGE ===
+    function saveData() {
+        const lastMsg = localStorage.getItem('lastFromTurboWarp') || 'нет данных';
+        localStorage.setItem('mySavedData', lastMsg);
+        document.getElementById('storageStatus').innerHTML = '✅ Сохранено: ' + lastMsg;
+    }
+    
+    function loadData() {
+        const saved = localStorage.getItem('mySavedData');
+        if (saved) {
+            document.getElementById('storageStatus').innerHTML = '📂 Загружено из localStorage: ' + saved;
+            // Можно отправить обратно в TurboWarp
+            window.parent.postMessage({
+                type: 'FROM_IFRAME',
+                payload: '[Загружено из памяти] ' + saved
+            }, '*');
+        } else {
+            document.getElementById('storageStatus').innerHTML = '⚠️ Нет сохранённых данных';
+        }
+    }
+    
+    // При загрузке страницы сообщаем, что iframe готов
+    window.addEventListener('load', function() {
+        window.parent.postMessage({
+            type: 'FROM_IFRAME',
+            payload: 'iframe_ready'
+        }, '*');
+        displayIncomingMessage('🟢 iframe загружен и готов к работе');
+    });
+</script>
+</body>
+</html>
