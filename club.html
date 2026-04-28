@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Perfect Chat</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* СОХРАНЯЕМ ВСЕ ОРИГИНАЛЬНЫЕ СТИЛИ НЕТРОНУТЫМИ */
+body {
+  margin: 0;
+  background: transparent;
+  font-family: 'Rubik', sans-serif;
+}
+
+.chat-container { 
+  width: 420px; 
+  margin: 20px auto; 
+}
+
+/* ДОПОЛНИТЕЛЬНЫЙ КОНТЕЙНЕР ДЛЯ ПРОКРУТКИ И ЛЕВОГО ВЫРАВНИВАНИЯ */
+/* Визуально не меняет оформления — только скролл */
+.chat-scrollable {
+  max-height: 80vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* всё выравнивается к левому краю */
+  scroll-behavior: smooth;
+}
+
+/* Исходные стили строк – без центрирования, всё слева */
+.row { 
+  display: flex; 
+  align-items: flex-start; 
+  margin: 14px 10px; 
+  width: auto;
+}
+
+/* УМЕНЬШАЕМ РАССТОЯНИЕ МЕЖДУ СООБЩЕНИЯМИ — только это меняем визуально */
+.row {
+  margin: 6px 10px;  /* было 14px, стало 6px — уменьшили отступ */
+}
+
+.avatar { 
+  width: 38px; 
+  height: 38px; 
+  margin-right: 10px; 
+  flex-shrink: 0; 
+}
+
+.avatar img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+  border-radius: 0; 
+}
+
+.message { 
+  position: relative; 
+  background: #1ea7e1; 
+  border-radius: 18px; 
+  padding: 10px 14px 12px 14px; 
+  max-width: 310px; 
+  box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15); 
+}
+
+/* исправленный хвост (не ломается и совпадает с пузырём) */
+.message::before { 
+  content: ""; 
+  position: absolute; 
+  left: -6px; 
+  top: 16px; 
+  width: 12px; 
+  height: 12px; 
+  background: #1ea7e1; 
+  transform: rotate(45deg); 
+  border-radius: 2px; 
+}
+
+.name { 
+  font-weight: 700; 
+  font-size: 15px; 
+  color: #ffffff; 
+  margin-bottom: 2px; 
+  text-shadow: 0 1px 0 rgba(0,0,0,0.3); 
+}
+
+.text { 
+  font-size: 16px; 
+  font-weight: 600; 
+  color: #eaf7ff; 
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.time { 
+  position: absolute; 
+  top: 8px; 
+  right: 12px; 
+  font-size: 11px; 
+  color: rgba(0,0,0,0.35); 
+  font-weight: 600; 
+}
+
+/* Сообщение-заглушка при отсутствии данных */
+.empty-chat {
+  color: rgba(255,255,255,0.6);
+  text-align: center;
+  font-size: 14px;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  font-weight: 400;
+}
+
+/* НИЧЕГО БОЛЬШЕ НЕ МЕНЯЕМ — все отступы, цвета, тени, форма пузырей 
+   идентичны исходному файлу, кроме уменьшенного margin между row.
+*/
+</style>
+</head>
+<body>
+<div class="chat-container">
+  <div class="chat-scrollable" id="chatScroll">
+    <!-- Сообщения будут отображаться динамически -->
+    <div class="empty-chat" id="emptyPlaceholder">Сообщения пока не загружены</div>
+  </div>
+</div>
+
+<script>
+  // Элементы DOM
+  const scrollContainer = document.getElementById('chatScroll');
+  const emptyPlaceholder = document.getElementById('emptyPlaceholder');
+  
+  // Функция для форматирования времени из UNIX timestamp (секунды)
+  // Вход: число секунд (например, 1777395081)
+  // Выход: строка типа "17 д. 1 ч. назад" или "только что", "1 мин. назад" и т.д.
+  function formatTimeAgo(timestampSeconds) {
+    if (!timestampSeconds) return "только что";
+    
+    const now = Math.floor(Date.now() / 1000);
+    const diffSeconds = now - timestampSeconds;
+    
+    // Если timestamp в будущем (ошибка), показываем "только что"
+    if (diffSeconds < 0) return "только что";
+    
+    const minutes = Math.floor(diffSeconds / 60);
+    const hours = Math.floor(diffSeconds / 3600);
+    const days = Math.floor(diffSeconds / 86400);
+    
+    if (days >= 1) {
+      return `${days} д. ${hours % 24} ч. назад`;
+    } else if (hours >= 1) {
+      return `${hours} ч. ${minutes % 60} мин. назад`;
+    } else if (minutes >= 1) {
+      return `${minutes} мин. назад`;
+    } else {
+      return `только что`;
+    }
+  }
+  
+  // Экранирование HTML для защиты от XSS
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+  
+  // Построение URL иконки по названию icon
+  // Базовый URL: https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/5c4d2cff072d93b418887ee2dd8376a51482acdc/GameFiles/Images/Icons/
+  // Добавляем название (например, BlackCat.svg, Standart.svg) .svg
+  function getIconUrl(iconName) {
+    if (!iconName) {
+      // fallback иконка по умолчанию (используем существующую из исходников)
+      return "https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/7078079fb0d951a18723045bb6c0d55c0ccf538c/GameFiles/Images/Icons/GameIcon4.svg";
+    }
+    const cleanName = String(iconName).replace(/\.svg$/i, ''); // убираем .svg если вдруг пришло
+    return `https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/5c4d2cff072d93b418887ee2dd8376a51482acdc/GameFiles/Images/Icons/${encodeURIComponent(cleanName)}.svg`;
+  }
+  
+  // Функция рендеринга сообщений на основе массива данных
+  // Принимает массив сообщений (каждое сообщение: {tag, name, icon, text, timestamp})
+  function renderMessages(messagesArray) {
+    // Очищаем контейнер, кроме пустышки (но пустышку удалим)
+    const scrollDiv = scrollContainer;
+    // Удаляем все дочерние элементы
+    while (scrollDiv.firstChild) {
+      scrollDiv.removeChild(scrollDiv.firstChild);
+    }
+    
+    // Если нет сообщений или пустой массив — показываем плейсхолдер
+    if (!messagesArray || messagesArray.length === 0) {
+      const emptyDiv = document.createElement('div');
+      emptyDiv.className = 'empty-chat';
+      emptyDiv.textContent = 'Сообщения пока не загружены';
+      scrollDiv.appendChild(emptyDiv);
+      return;
+    }
+    
+    // Проходим по массиву и создаём .row для каждого сообщения
+    // Порядок: массив приходит скорее всего [старые... новые]. Самое последнее значение массива = самое нижнее.
+    // Для отображения в хронологическом порядке (сверху старые, снизу новые) нужно просто отрисовать в том порядке, как пришло.
+    // Если самое последнее в массиве — нижнее, значит массив уже в правильном порядке (старое -> новое).
+    // Никаких reverse не делаем, чтобы сохранить логику "последний элемент = последнее сообщение в чате снизу".
+    for (let i = 0; i < messagesArray.length; i++) {
+      const msg = messagesArray[i];
+      // Валидация полей
+      if (!msg || typeof msg !== 'object') continue;
+      
+      const name = msg.name || 'Аноним';
+      const text = msg.text || '';
+      const icon = msg.icon || 'GameIcon4'; // запасной вариант
+      const timestamp = msg.timestamp ? Number(msg.timestamp) : null;
+      
+      // Форматируем время
+      let timeFormatted = 'только что';
+      if (timestamp && !isNaN(timestamp)) {
+        timeFormatted = formatTimeAgo(timestamp);
+      } else {
+        timeFormatted = 'недавно';
+      }
+      
+      // Экранируем текст и имя
+      const safeName = escapeHtml(name);
+      const safeText = escapeHtml(text);
+      
+      // Получаем URL иконки
+      const iconUrl = getIconUrl(icon);
+      
+      // Создаём DOM-элементы в точном соответствии с исходной структурой
+      const row = document.createElement('div');
+      row.className = 'row';
+      
+      // Блок аватара
+      const avatarDiv = document.createElement('div');
+      avatarDiv.className = 'avatar';
+      const img = document.createElement('img');
+      img.src = iconUrl;
+      // Обработка ошибки загрузки иконки — подменяем на дефолтную, если не загрузилась
+      img.onerror = function() {
+        if (this.src !== iconUrl) return;
+        this.src = "https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/7078079fb0d951a18723045bb6c0d55c0ccf538c/GameFiles/Images/Icons/GameIcon4.svg";
+      };
+      avatarDiv.appendChild(img);
+      
+      // Блок сообщения
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message';
+      
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'name';
+      nameDiv.textContent = safeName;
+      
+      const textDiv = document.createElement('div');
+      textDiv.className = 'text';
+      textDiv.textContent = safeText;
+      
+      const timeDiv = document.createElement('div');
+      timeDiv.className = 'time';
+      timeDiv.textContent = timeFormatted;
+      
+      messageDiv.appendChild(nameDiv);
+      messageDiv.appendChild(textDiv);
+      messageDiv.appendChild(timeDiv);
+      
+      row.appendChild(avatarDiv);
+      row.appendChild(messageDiv);
+      
+      scrollDiv.appendChild(row);
+    }
+    
+    // После рендера прокручиваем в самый низ (чтобы последнее сообщение было видно)
+    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+  }
+  
+  // Флаг, чтобы при первом получении данных отправить "loaded" только один раз
+  let hasSentLoaded = false;
+  
+  // Обработчик сообщений от родительского окна (игры)
+  window.addEventListener('message', function(event) {
+    // Для безопасности в будущем можно проверять origin, но пока оставляем '*' для совместимости
+    // Игра будет отправлять сообщение, содержащее массив данных.
+    const receivedData = event.data;
+    
+    // Анализируем полученные данные: может быть массив или строка JSON
+    let messagesArray = null;
+    let isValidArray = false;
+    
+    // Если данные — массив (уже распарсенный)
+    if (Array.isArray(receivedData)) {
+      messagesArray = receivedData;
+      isValidArray = true;
+    } 
+    // Если данные — строка, пробуем распарсить JSON
+    else if (typeof receivedData === 'string') {
+      try {
+        const parsed = JSON.parse(receivedData);
+        if (Array.isArray(parsed)) {
+          messagesArray = parsed;
+          isValidArray = true;
+        } else {
+          // Если не массив, но может быть одиночным объектом? по заданию именно массив, но на всякий случай
+          console.warn('Получены не массив, а другой JSON', parsed);
+        }
+      } catch(e) {
+        // Невалидный JSON — возможно, это просто строковое сообщение от игры для синхронизации
+        console.log('Получена не-JSON строка:', receivedData);
+      }
+    }
+    // Если данные — объект, но не массив (например, {type: 'update', data: [...]})
+    else if (receivedData && typeof receivedData === 'object' && !Array.isArray(receivedData)) {
+      // Некоторые системы оборачивают массив в объект. Проверим, есть ли поле data или messages
+      if (Array.isArray(receivedData.messages)) {
+        messagesArray = receivedData.messages;
+        isValidArray = true;
+      } else if (Array.isArray(receivedData.data)) {
+        messagesArray = receivedData.data;
+        isValidArray = true;
+      }
+    }
+    
+    // Если удалось извлечь массив сообщений
+    if (isValidArray && messagesArray !== null) {
+      // Отправляем ответное сообщение " loaded " (с пробелами как в задании)
+      if (!hasSentLoaded) {
+        window.parent.postMessage(' loaded ', '*');
+        hasSentLoaded = true;
+      } else {
+        // При повторных обновлениях тоже можно отправить подтверждение, но по заданию просто обновляем сообщения
+        // Для надёжности тоже шлём loaded (не противоречит логике)
+        window.parent.postMessage(' loaded ', '*');
+      }
+      
+      // Обновляем отображение сообщений
+      renderMessages(messagesArray);
+    } 
+    else {
+      // Если данные пришли, но не являются массивом — возможно, это сигнал "пустой массив" или приветствие.
+      // Проверяем что это не просто тестовое сообщение, игнорируем стандартные.
+      if (typeof receivedData === 'string' && receivedData.includes('iframe') === false) {
+        // Если пустая строка или специальные команды — не трогаем чат
+        console.log('Получено не-массив сообщение, чат не обновлён:', receivedData);
+      }
+      // Также если пришло что-то иное, но чат пуст — можно ничего не делать
+    }
+  });
+  
+  // Инициализация: при загрузке страницы отправляем сообщение о готовности "loaded" (если игра уже слушает)
+  // Так как по ТЗ: "Страница принимает эти сообщения и отправляет ответное сообщение ' loaded '."
+  // При старте, пока нет входящих данных, чат пуст. Отправляем loaded один раз для инициализации связи.
+  window.addEventListener('DOMContentLoaded', function() {
+    // Сообщаем родителю, что iframe загружен, можно слать данные
+    window.parent.postMessage(' loaded ', '*');
+    hasSentLoaded = true; // помечаем, что отправка уже была
+    
+    // Устанавливаем начальное состояние без сообщений
+    renderMessages([]);
+  });
+  
+  // Небольшая защита: если игра отправила массив, но там пусто, показываем заглушку. Уже обработано в renderMessages.
+  // Также поддерживаем обновление при повторных отправках: перерисовка полностью заменяет старые сообщения.
+  // Динамическая подгрузка иконок с обработкой ошибок работает.
+</script>
+</body>
+</html>
