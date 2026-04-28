@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iframe Communication Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .status {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .status-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-weight: bold;
+            word-break: break-all;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], textarea {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        input[type="text"]::placeholder, textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        button {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        button:active {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .message-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .message-item {
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .message-sent {
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .message-received {
+            background: rgba(33, 150, 243, 0.3);
+        }
+
+        .message-error {
+            background: rgba(244, 67, 54, 0.3);
+        }
+
+        .timestamp {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .badge-sent {
+            background: rgba(76, 175, 80, 0.4);
+        }
+
+        .badge-received {
+            background: rgba(33, 150, 243, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📡 Iframe Communication</h1>
+        
+        <!-- Статус соединения -->
+        <div class="section">
+            <h2>📊 Статус</h2>
+            <div class="status">
+                <div class="status-label">Последнее полученное сообщение:</div>
+                <div class="status-value" id="lastReceived">Нет сообщений</div>
+            </div>
+            <div class="status">
+                <div class="status-label">Последнее отправленное сообщение:</div>
+                <div class="status-value" id="lastSent">Нет сообщений</div>
+            </div>
+        </div>
+
+        <!-- Отправка сообщений -->
+        <div class="section">
+            <h2>📤 Отправить сообщение в Scratch</h2>
+            <div class="input-group">
+                <input type="text" id="messageInput" placeholder="Введите сообщение..." />
+                <button onclick="sendMessage()">Отправить</button>
+            </div>
+            <div class="input-group">
+                <textarea id="jsonInput" rows="3" placeholder='JSON данные, например: {"key": "value"}'></textarea>
+                <button onclick="sendJSON()">Отправить JSON</button>
+            </div>
+            <div style="margin-top: 10px;">
+                <button onclick="sendTestMessage()">Отправить тестовое сообщение</button>
+                <button onclick="sendNumber()">Отправить число</button>
+                <button onclick="sendBoolean()">Отправить булево</button>
+            </div>
+        </div>
+
+        <!-- История сообщений -->
+        <div class="section">
+            <h2>📝 История сообщений</h2>
+            <div class="message-list" id="messageList">
+                <div class="message-item" style="color: rgba(255,255,255,0.6);">История пуста</div>
+            </div>
+            <button onclick="clearHistory()" style="margin-top: 10px;">Очистить историю</button>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            // Отправляем стартовое сообщение в Scratch
+            window.parent.postMessage('Iframe ready', '*');
+            addToHistory('received', 'System', 'Iframe initialized');
+            
+            // Обработка нажатия Enter
+            document.getElementById('messageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+
+        // Слушаем сообщения от Scratch
+        window.addEventListener('message', function(event) {
+            // Проверяем источник для безопасности
+            // В продакшене раскомментируйте и настройте:
+            // if (event.origin !== 'expected-origin') return;
+            
+            const data = event.data;
+            const type = typeof data;
+            
+            document.getElementById('lastReceived').textContent = 
+                type === 'object' ? JSON.stringify(data) : String(data);
+            
+            addToHistory('received', type, data);
+            
+            // Автоматический ответ на некоторые сообщения
+            if (data === 'ping') {
+                window.parent.postMessage('pong', '*');
+                addToHistory('sent', 'auto-reply', 'pong');
+            }
+        });
+
+        // Функции отправки
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message === '') {
+                showError('Введите сообщение');
+                return;
+            }
+            
+            window.parent.postMessage(message, '*');
+            document.getElementById('lastSent').textContent = message;
+            addToHistory('sent', 'string', message);
+            input.value = '';
+        }
+
+        function sendJSON() {
+            const input = document.getElementById('jsonInput');
+            const value = input.value.trim();
+            
+            if (value === '') {
+                showError('Введите JSON данные');
+                return;
+            }
+            
+            try {
+                // Пробуем отправить как объект, если это валидный JSON
+                const obj = JSON.parse(value);
+                window.parent.postMessage(obj, '*');
+                document.getElementById('lastSent').textContent = JSON.stringify(obj);
+                addToHistory('sent', 'object', obj);
+                input.value = '';
+            } catch (e) {
+                // Если невалидный JSON, отправляем как строку
+                window.parent.postMessage(value, '*');
+                document.getElementById('lastSent').textContent = value;
+                addToHistory('sent', 'string', value);
+                input.value = '';
+            }
+        }
+
+        function sendTestMessage() {
+            const testMessage = 'Hello from iframe! 👋';
+            window.parent.postMessage(testMessage, '*');
+            document.getElementById('lastSent').textContent = testMessage;
+            addToHistory('sent', 'test', testMessage);
+        }
+
+        function sendNumber() {
+            const number = 42;
+            window.parent.postMessage(number, '*');
+            document.getElementById('lastSent').textContent = number;
+            addToHistory('sent', 'number', number);
+        }
+
+        function sendBoolean() {
+            const bool = true;
+            window.parent.postMessage(bool, '*');
+            document.getElementById('lastSent').textContent = bool;
+            addToHistory('sent', 'boolean', bool);
+        }
+
+        // Функции для истории
+        function addToHistory(direction, type, data) {
+            const list = document.getElementById('messageList');
+            
+            // Удаляем сообщение "История пуста"
+            if (list.children.length === 1 && list.children[0].textContent === 'История пуста') {
+                list.innerHTML = '';
+            }
+            
+            const item = document.createElement('div');
+            const now = new Date();
+            const time = now.toLocaleTimeString();
+            
+            let displayData = typeof data === 'object' ? JSON.stringify(data) : String(data);
+            if (displayData.length > 50) {
+                displayData = displayData.substring(0, 50) + '...';
+            }
+            
+            if (direction === 'sent') {
+                item.className = 'message-item message-sent';
+                item.innerHTML = `
+                    <div class="timestamp">${time}</div>
+                    <span class="badge badge-sent">ОТПРАВЛЕНО</span>
+                    <span>${displayData}</span>
+                `;
+            } else {
+                item.className = 'message-item message-received';
+                item.innerHTML = `
+                    <div class="timestamp">${time}</div>
+                    <span class="badge badge-received">ПОЛУЧЕНО</span>
+                    <span>${displayData}</span>
+                `;
+            }
+            
+            list.insertBefore(item, list.firstChild);
+            
+            // Ограничиваем историю 20 сообщениями
+            while (list.children.length > 20) {
+                list.removeChild(list.lastChild);
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('lastSent').textContent = 'Ошибка: ' + message;
+            addToHistory('error', 'error', message);
+        }
+
+        function clearHistory() {
+            const list = document.getElementById('messageList');
+            list.innerHTML = '<div class="message-item" style="color: rgba(255,255,255,0.6);">История пуста</div>';
+        }
+    </script>
+</body>
+</html>
