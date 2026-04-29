@@ -18,16 +18,16 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: transparent; /* фон прозрачный, как и было */
+  background: transparent;
   overflow: hidden;        /* убираем скролл на уровне body/html */
 }
 
 body {
   font-family: 'Rubik', sans-serif;
-  background: transparent; /* сохраняем прозрачность, если родительский фон другой */
+  background: transparent;
 }
 
-/* Чат-контейнер — занимает 100% высоты и ширины, без внешних отступов */
+/* Чат-контейнер — занимает 100% высоты и ширины */
 .chat-container {
   width: 100%;
   height: 100%;
@@ -35,7 +35,7 @@ body {
   padding: 0;
   display: flex;
   flex-direction: column;
-  background: transparent; /* как в исходном файле, прозрачный */
+  background: transparent;
 }
 
 /* Область прокрутки: занимает всё пространство, скролл скрыт визуально, но работает */
@@ -47,7 +47,7 @@ body {
   flex-direction: column;
   align-items: flex-start; /* всё выравнивается к левому краю */
   scroll-behavior: smooth;
-  padding: 10px 0 10px 0;   /* небольшие отступы сверху/снизу для воздуха, но не ломают стиль */
+  padding: 8px 0 12px 0;
   
   /* Скрываем полосу прокрутки, но оставляем функционал */
   scrollbar-width: none;     /* Firefox */
@@ -58,20 +58,20 @@ body {
   display: none;             /* Chrome/Safari/Opera */
 }
 
-/* Сохраняем исходные стили сообщений, меняем только margin между сообщениями (уже уменьшен) */
+/* Строка сообщения — теперь занимает почти всю ширину, чтобы пузырь мог растягиваться */
 .row { 
   display: flex; 
   align-items: flex-start; 
-  margin: 6px 10px;          /* уменьшенный отступ (было 14px) */
-  width: auto;
+  margin: 5px 12px;          /* чуть уменьшили отступы между сообщениями */
+  width: calc(100% - 24px);  /* ширина на всю доступную область с учётом margin */
   max-width: 100%;
 }
 
 /* Аватар фиксированного размера */
 .avatar { 
-  width: 38px; 
-  height: 38px; 
-  margin-right: 10px; 
+  width: 34px;               /* чуть уменьшили аватар для компактности */
+  height: 34px; 
+  margin-right: 8px; 
   flex-shrink: 0; 
 }
 
@@ -82,24 +82,24 @@ body {
   border-radius: 0; 
 }
 
-/* Пузырь сообщения */
+/* Пузырь сообщения — теперь растягивается на всю доступную ширину */
 .message { 
   position: relative; 
   background: #1ea7e1; 
   border-radius: 18px; 
-  padding: 10px 14px 12px 14px; 
-  max-width: 310px;          /* сохраняем максимальную ширину, но можно чуть гибче */
-  width: auto;
+  padding: 8px 12px 10px 12px;  /* чуть уменьшили внутренние отступы (было 10px 14px 12px 14px) */
+  flex: 1;                       /* занимает всё свободное пространство в row */
+  max-width: 100%;               /* может расти в ширину */
   box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15);
   word-wrap: break-word;
 }
 
-/* Хвост сообщения (не ломается) */
+/* Хвост сообщения — скорректировали позицию под новый размер пузыря */
 .message::before { 
   content: ""; 
   position: absolute; 
   left: -6px; 
-  top: 16px; 
+  top: 14px;                    /* чуть подняли под новый padding */
   width: 12px; 
   height: 12px; 
   background: #1ea7e1; 
@@ -109,26 +109,26 @@ body {
 
 .name { 
   font-weight: 700; 
-  font-size: 15px; 
+  font-size: 14px;              /* чуть уменьшили шрифт имени (было 15px) */
   color: #ffffff; 
   margin-bottom: 2px; 
   text-shadow: 0 1px 0 rgba(0,0,0,0.3); 
 }
 
 .text { 
-  font-size: 16px; 
+  font-size: 15px;              /* чуть уменьшили шрифт текста (было 16px) */
   font-weight: 600; 
   color: #eaf7ff; 
   word-break: break-word;
   white-space: pre-wrap;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 .time { 
   position: absolute; 
-  top: 8px; 
-  right: 12px; 
-  font-size: 11px; 
+  top: 6px;                    /* скорректировали под меньший padding */
+  right: 10px; 
+  font-size: 10px;             /* чуть уменьшили время (было 11px) */
   color: rgba(0,0,0,0.35); 
   font-weight: 600; 
 }
@@ -144,7 +144,7 @@ body {
   font-weight: 400;
 }
 
-/* ВСЕ ОСТАЛЬНЫЕ СТИЛИ ИДЕНТИЧНЫ ОРИГИНАЛУ */
+/* ВСЕ ОСТАЛЬНЫЕ СТИЛИ СОХРАНЯЮТ ОРИГИНАЛЬНУЮ ВИЗУАЛЬНУЮ КОНЦЕПЦИЮ */
 </style>
 </head>
 <body>
@@ -157,6 +157,27 @@ body {
 <script>
   // Элементы DOM
   const scrollContainer = document.getElementById('chatScroll');
+  
+  // Флаг для блокировки автоматической прокрутки, когда пользователь скроллит вручную
+  let userScrolling = false;
+  let scrollTimeout = null;
+  
+  // Отслеживаем, когда пользователь начинает скроллить вручную
+  scrollContainer.addEventListener('scroll', function() {
+    userScrolling = true;
+    // Сбрасываем флаг через 1.5 секунды после остановки скролла
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      userScrolling = false;
+    }, 1500);
+  });
+  
+  // Функция плавной прокрутки вниз ТОЛЬКО если пользователь не скроллит вручную
+  function scrollToBottomIfNeeded() {
+    if (!userScrolling) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    }
+  }
   
   // Функция форматирования времени из UNIX timestamp (секунды)
   function formatTimeAgo(timestampSeconds) {
@@ -172,7 +193,6 @@ body {
     const days = Math.floor(diffSeconds / 86400);
     
     if (days >= 1) {
-      // показывает дни и часы, как в исходном образце ("17 д. 1 ч. назад")
       const remainingHours = hours % 24;
       return `${days} д. ${remainingHours} ч. назад`;
     } else if (hours >= 1) {
@@ -207,6 +227,12 @@ body {
   
   // Рендер сообщений
   function renderMessages(messagesArray) {
+    // Сохраняем позицию скролла и флаг активности пользователя
+    const wasUserScrolling = userScrolling;
+    const oldScrollHeight = scrollContainer.scrollHeight;
+    const oldScrollTop = scrollContainer.scrollTop;
+    const wasAtBottom = (oldScrollHeight - oldScrollTop - scrollContainer.clientHeight) < 50;
+    
     // Очищаем контейнер
     while (scrollContainer.firstChild) {
       scrollContainer.removeChild(scrollContainer.firstChild);
@@ -280,11 +306,37 @@ body {
       scrollContainer.appendChild(row);
     }
     
-    // Прокрутка вниз (к последнему сообщению)
-    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    // Умная прокрутка:
+    // - Если пользователь не скроллит активно И (был внизу ИЛИ это первый рендер)
+    // - Не сопротивляемся, если пользователь пытается листать вверх
+    if (!wasUserScrolling) {
+      // Если пользователь был внизу до обновления, прокручиваем вниз
+      if (wasAtBottom || messagesArray.length < 5) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      } else {
+        // Иначе сохраняем позицию относительно видимого контента
+        const newScrollHeight = scrollContainer.scrollHeight;
+        const heightDiff = newScrollHeight - oldScrollHeight;
+        if (heightDiff > 0 && oldScrollTop > 0) {
+          scrollContainer.scrollTop = oldScrollTop + heightDiff;
+        } else {
+          scrollContainer.scrollTop = oldScrollTop;
+        }
+      }
+    } else {
+      // Если пользователь скроллит вручную — сохраняем его позицию
+      const newScrollHeight = scrollContainer.scrollHeight;
+      const heightDiff = newScrollHeight - oldScrollHeight;
+      if (heightDiff > 0 && oldScrollTop > 0) {
+        scrollContainer.scrollTop = oldScrollTop + heightDiff;
+      } else {
+        scrollContainer.scrollTop = oldScrollTop;
+      }
+    }
   }
   
   let hasSentLoaded = false;
+  let currentMessages = []; // храним текущие сообщения для повторного использования
   
   // Обработчик сообщений от родительского окна (игры)
   window.addEventListener('message', function(event) {
@@ -304,7 +356,6 @@ body {
           messagesArray = parsed;
           isValidArray = true;
         } else if (parsed && typeof parsed === 'object') {
-          // если пришёл объект с полем messages или data
           if (Array.isArray(parsed.messages)) {
             messagesArray = parsed.messages;
             isValidArray = true;
@@ -332,22 +383,46 @@ body {
       window.parent.postMessage(' loaded ', '*');
       hasSentLoaded = true;
       
-      // Обновляем сообщения
+      // Сохраняем и обновляем сообщения
+      currentMessages = messagesArray;
       renderMessages(messagesArray);
     }
   });
   
-  // Инициализация при загрузке: отправляем " loaded " и показываем пустой чат
+  // Инициализация при загрузке
   window.addEventListener('DOMContentLoaded', function() {
     window.parent.postMessage(' loaded ', '*');
     hasSentLoaded = true;
     renderMessages([]);
   });
   
-  // Дополнительно: при любом изменении размера окна (или если iframe меняет размеры)
-  // скролл остаётся внизу, если сообщения уже есть — но это необязательно.
-  // Также слушаем потенциальные изменения DOM (для перестраховки, когда картинки подгружаются)
-  // но не меняем визуал.
+  // Слушаем завершение загрузки изображений, чтобы скорректировать скролл (чтобы не было скачков)
+  // Используем MutationObserver для отслеживания добавления картинок
+  const observer = new MutationObserver(function(mutations) {
+    let needScrollCheck = false;
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'childList' && mutation.addedNodes.length) {
+        mutation.addedNodes.forEach(function(node) {
+          if (node.nodeName === 'IMG' || (node.querySelector && node.querySelector('img'))) {
+            needScrollCheck = true;
+          }
+        });
+      }
+    });
+    if (needScrollCheck && !userScrolling) {
+      // Небольшая задержка для загрузки картинок
+      setTimeout(() => {
+        if (!userScrolling) {
+          const isAtBottom = (scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight) < 50;
+          if (isAtBottom) {
+            scrollContainer.scrollTop = scrollContainer.scrollHeight;
+          }
+        }
+      }, 100);
+    }
+  });
+  
+  observer.observe(scrollContainer, { childList: true, subtree: true });
 </script>
 </body>
 </html>
