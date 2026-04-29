@@ -45,8 +45,8 @@ body {
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* всё выравнивается к левому краю */
-  scroll-behavior: smooth;
+  align-items: flex-start;
+  scroll-behavior: auto;   /* плавность убрана, чтобы не мешать листанию */
   padding: 8px 0 12px 0;
   
   /* Скрываем полосу прокрутки, но оставляем функционал */
@@ -58,20 +58,20 @@ body {
   display: none;             /* Chrome/Safari/Opera */
 }
 
-/* Строка сообщения — теперь занимает почти всю ширину, чтобы пузырь мог растягиваться */
+/* Строка сообщения — теперь занимает всю доступную ширину, чтобы можно было расширить пузырь */
 .row { 
   display: flex; 
   align-items: flex-start; 
-  margin: 5px 12px;          /* чуть уменьшили отступы между сообщениями */
-  width: calc(100% - 24px);  /* ширина на всю доступную область с учётом margin */
+  margin: 4px 10px;          /* чуть меньше отступов, сообщения компактнее */
+  width: calc(100% - 20px);  /* растягиваем на всю ширину минус горизонтальные маржины */
   max-width: 100%;
 }
 
 /* Аватар фиксированного размера */
 .avatar { 
-  width: 34px;               /* чуть уменьшили аватар для компактности */
+  width: 34px;               /* чуть уменьшил аватар для компактности (было 38px) */
   height: 34px; 
-  margin-right: 8px; 
+  margin-right: 8px;         /* чуть меньше отступ */
   flex-shrink: 0; 
 }
 
@@ -82,26 +82,28 @@ body {
   border-radius: 0; 
 }
 
-/* Пузырь сообщения — теперь растягивается на всю доступную ширину */
+/* Пузырь сообщения — максимальная ширина, но с разумным ограничением */
 .message { 
   position: relative; 
   background: #1ea7e1; 
-  border-radius: 18px; 
-  padding: 8px 12px 10px 12px;  /* чуть уменьшили внутренние отступы (было 10px 14px 12px 14px) */
-  flex: 1;                       /* занимает всё свободное пространство в row */
-  max-width: 100%;               /* может расти в ширину */
+  border-radius: 16px;       /* чуть меньше скругление (было 18px) — пузырь компактнее */
+  padding: 8px 12px 10px 12px; /* уменьшил внутренние отступы (было 10px 14px 12px 14px) */
+  max-width: 100%;           /* теперь сообщение занимает максимум доступной ширины */
+  min-width: 120px;          /* минимальная ширина, чтобы не слишком сжималось */
+  width: auto;
+  flex: 1;                   /* позволяет пузырю расти в пределах родителя */
   box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15);
   word-wrap: break-word;
 }
 
-/* Хвост сообщения — скорректировали позицию под новый размер пузыря */
+/* Хвост сообщения — чуть скорректирован по размерам под новый пузырь */
 .message::before { 
   content: ""; 
   position: absolute; 
   left: -6px; 
-  top: 14px;                    /* чуть подняли под новый padding */
-  width: 12px; 
-  height: 12px; 
+  top: 14px;                 /* чуть поднял, чтобы был на уровне */
+  width: 11px; 
+  height: 11px; 
   background: #1ea7e1; 
   transform: rotate(45deg); 
   border-radius: 2px; 
@@ -109,14 +111,14 @@ body {
 
 .name { 
   font-weight: 700; 
-  font-size: 14px;              /* чуть уменьшили шрифт имени (было 15px) */
+  font-size: 14px;           /* чуть мельче (было 15px) */
   color: #ffffff; 
   margin-bottom: 2px; 
   text-shadow: 0 1px 0 rgba(0,0,0,0.3); 
 }
 
 .text { 
-  font-size: 15px;              /* чуть уменьшили шрифт текста (было 16px) */
+  font-size: 14px;           /* чуть уменьшил шрифт (было 16px) — сообщения компактнее */
   font-weight: 600; 
   color: #eaf7ff; 
   word-break: break-word;
@@ -126,9 +128,9 @@ body {
 
 .time { 
   position: absolute; 
-  top: 6px;                    /* скорректировали под меньший padding */
+  top: 6px;                  /* скорректировано под меньший паддинг */
   right: 10px; 
-  font-size: 10px;             /* чуть уменьшили время (было 11px) */
+  font-size: 10px;           /* чуть мельче (было 11px) */
   color: rgba(0,0,0,0.35); 
   font-weight: 600; 
 }
@@ -144,7 +146,8 @@ body {
   font-weight: 400;
 }
 
-/* ВСЕ ОСТАЛЬНЫЕ СТИЛИ СОХРАНЯЮТ ОРИГИНАЛЬНУЮ ВИЗУАЛЬНУЮ КОНЦЕПЦИЮ */
+/* ВСЕ ОСТАЛЬНЫЕ ЭЛЕМЕНТЫ СОХРАНЯЮТ ОРИГИНАЛЬНЫЙ ВИЗУАЛЬНЫЙ ДУХ,
+   но стали чуть компактнее по просьбе пользователя */
 </style>
 </head>
 <body>
@@ -155,274 +158,284 @@ body {
 </div>
 
 <script>
-  // Элементы DOM
-  const scrollContainer = document.getElementById('chatScroll');
-  
-  // Флаг для блокировки автоматической прокрутки, когда пользователь скроллит вручную
-  let userScrolling = false;
-  let scrollTimeout = null;
-  
-  // Отслеживаем, когда пользователь начинает скроллить вручную
-  scrollContainer.addEventListener('scroll', function() {
-    userScrolling = true;
-    // Сбрасываем флаг через 1.5 секунды после остановки скролла
-    if (scrollTimeout) clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-      userScrolling = false;
-    }, 1500);
-  });
-  
-  // Функция плавной прокрутки вниз ТОЛЬКО если пользователь не скроллит вручную
-  function scrollToBottomIfNeeded() {
-    if (!userScrolling) {
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
-    }
-  }
-  
-  // Функция форматирования времени из UNIX timestamp (секунды)
-  function formatTimeAgo(timestampSeconds) {
-    if (!timestampSeconds) return "только что";
+  (function() {
+    // Элементы DOM
+    const scrollContainer = document.getElementById('chatScroll');
     
-    const now = Math.floor(Date.now() / 1000);
-    const diffSeconds = now - timestampSeconds;
+    // Флаг для отслеживания, нужно ли принудительно скроллить вниз
+    // Теперь пользователь может свободно листать вверх, а автоматический скролл 
+    // будет срабатывать только при получении НОВЫХ сообщений (при полном обновлении массива)
+    // и то — только если пользователь был внизу или это первая загрузка.
+    let userScrolledUp = false;       // хочет ли пользователь листать вверх
+    let lastScrollTop = 0;
+    let initialRenderDone = false;
     
-    if (diffSeconds < 0) return "только что";
-    
-    const minutes = Math.floor(diffSeconds / 60);
-    const hours = Math.floor(diffSeconds / 3600);
-    const days = Math.floor(diffSeconds / 86400);
-    
-    if (days >= 1) {
-      const remainingHours = hours % 24;
-      return `${days} д. ${remainingHours} ч. назад`;
-    } else if (hours >= 1) {
-      const remainingMins = minutes % 60;
-      return `${hours} ч. ${remainingMins} мин. назад`;
-    } else if (minutes >= 1) {
-      return `${minutes} мин. назад`;
-    } else {
-      return `только что`;
-    }
-  }
-  
-  // Экранирование HTML
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-  
-  // Построение URL иконки по названию icon
-  function getIconUrl(iconName) {
-    if (!iconName) {
-      return "https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/7078079fb0d951a18723045bb6c0d55c0ccf538c/GameFiles/Images/Icons/GameIcon4.svg";
-    }
-    const cleanName = String(iconName).replace(/\.svg$/i, '');
-    return `https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/5c4d2cff072d93b418887ee2dd8376a51482acdc/GameFiles/Images/Icons/${encodeURIComponent(cleanName)}.svg`;
-  }
-  
-  // Рендер сообщений
-  function renderMessages(messagesArray) {
-    // Сохраняем позицию скролла и флаг активности пользователя
-    const wasUserScrolling = userScrolling;
-    const oldScrollHeight = scrollContainer.scrollHeight;
-    const oldScrollTop = scrollContainer.scrollTop;
-    const wasAtBottom = (oldScrollHeight - oldScrollTop - scrollContainer.clientHeight) < 50;
-    
-    // Очищаем контейнер
-    while (scrollContainer.firstChild) {
-      scrollContainer.removeChild(scrollContainer.firstChild);
-    }
-    
-    // Если нет сообщений
-    if (!messagesArray || messagesArray.length === 0) {
-      const emptyDiv = document.createElement('div');
-      emptyDiv.className = 'empty-chat';
-      emptyDiv.textContent = 'Сообщения пока не загружены';
-      scrollContainer.appendChild(emptyDiv);
-      return;
-    }
-    
-    // Проходим по массиву (порядок как пришёл: от старых к новым — последний элемент нижний)
-    for (let i = 0; i < messagesArray.length; i++) {
-      const msg = messagesArray[i];
-      if (!msg || typeof msg !== 'object') continue;
+    // Функция форматирования времени из UNIX timestamp (секунды)
+    function formatTimeAgo(timestampSeconds) {
+      if (!timestampSeconds) return "только что";
       
-      const name = msg.name || 'Аноним';
-      const text = msg.text || '';
-      const icon = msg.icon || 'GameIcon4';
-      const timestamp = msg.timestamp ? Number(msg.timestamp) : null;
+      const now = Math.floor(Date.now() / 1000);
+      let diffSeconds = now - timestampSeconds;
       
-      let timeFormatted = 'только что';
-      if (timestamp && !isNaN(timestamp)) {
-        timeFormatted = formatTimeAgo(timestamp);
+      if (diffSeconds < 0) diffSeconds = 0;
+      
+      const minutes = Math.floor(diffSeconds / 60);
+      const hours = Math.floor(diffSeconds / 3600);
+      const days = Math.floor(diffSeconds / 86400);
+      
+      if (days >= 1) {
+        const remainingHours = hours % 24;
+        return `${days} д. ${remainingHours} ч. назад`;
+      } else if (hours >= 1) {
+        const remainingMins = minutes % 60;
+        return `${hours} ч. ${remainingMins} мин. назад`;
+      } else if (minutes >= 1) {
+        return `${minutes} мин. назад`;
       } else {
-        timeFormatted = 'недавно';
+        return `только что`;
       }
-      
-      const safeName = escapeHtml(name);
-      const safeText = escapeHtml(text);
-      const iconUrl = getIconUrl(icon);
-      
-      const row = document.createElement('div');
-      row.className = 'row';
-      
-      const avatarDiv = document.createElement('div');
-      avatarDiv.className = 'avatar';
-      const img = document.createElement('img');
-      img.src = iconUrl;
-      img.onerror = function() {
-        if (this.src !== iconUrl) return;
-        this.src = "https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/7078079fb0d951a18723045bb6c0d55c0ccf538c/GameFiles/Images/Icons/GameIcon4.svg";
-      };
-      avatarDiv.appendChild(img);
-      
-      const messageDiv = document.createElement('div');
-      messageDiv.className = 'message';
-      
-      const nameDiv = document.createElement('div');
-      nameDiv.className = 'name';
-      nameDiv.textContent = safeName;
-      
-      const textDiv = document.createElement('div');
-      textDiv.className = 'text';
-      textDiv.textContent = safeText;
-      
-      const timeDiv = document.createElement('div');
-      timeDiv.className = 'time';
-      timeDiv.textContent = timeFormatted;
-      
-      messageDiv.appendChild(nameDiv);
-      messageDiv.appendChild(textDiv);
-      messageDiv.appendChild(timeDiv);
-      
-      row.appendChild(avatarDiv);
-      row.appendChild(messageDiv);
-      
-      scrollContainer.appendChild(row);
     }
     
-    // Умная прокрутка:
-    // - Если пользователь не скроллит активно И (был внизу ИЛИ это первый рендер)
-    // - Не сопротивляемся, если пользователь пытается листать вверх
-    if (!wasUserScrolling) {
-      // Если пользователь был внизу до обновления, прокручиваем вниз
-      if (wasAtBottom || messagesArray.length < 5) {
+    // Экранирование HTML
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+    
+    // Построение URL иконки
+    function getIconUrl(iconName) {
+      if (!iconName) {
+        return "https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/7078079fb0d951a18723045bb6c0d55c0ccf538c/GameFiles/Images/Icons/GameIcon4.svg";
+      }
+      const cleanName = String(iconName).replace(/\.svg$/i, '');
+      return `https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/5c4d2cff072d93b418887ee2dd8376a51482acdc/GameFiles/Images/Icons/${encodeURIComponent(cleanName)}.svg`;
+    }
+    
+    // Проверка, находится ли скролл внизу (с небольшим допуском)
+    function isScrolledToBottom() {
+      if (!scrollContainer) return true;
+      const threshold = 30; // пикселей до низа считаем "внизу"
+      const scrollBottom = scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight;
+      return scrollBottom <= threshold;
+    }
+    
+    // Умная прокрутка вниз, только если пользователь не ушел вверх
+    function smartScrollToBottom(force = false) {
+      if (!scrollContainer) return;
+      // Если принудительно (первая загрузка) - скроллим
+      if (force) {
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      } else {
-        // Иначе сохраняем позицию относительно видимого контента
-        const newScrollHeight = scrollContainer.scrollHeight;
-        const heightDiff = newScrollHeight - oldScrollHeight;
-        if (heightDiff > 0 && oldScrollTop > 0) {
-          scrollContainer.scrollTop = oldScrollTop + heightDiff;
-        } else {
-          scrollContainer.scrollTop = oldScrollTop;
-        }
+        userScrolledUp = false;
+        return;
       }
-    } else {
-      // Если пользователь скроллит вручную — сохраняем его позицию
-      const newScrollHeight = scrollContainer.scrollHeight;
-      const heightDiff = newScrollHeight - oldScrollHeight;
-      if (heightDiff > 0 && oldScrollTop > 0) {
-        scrollContainer.scrollTop = oldScrollTop + heightDiff;
-      } else {
-        scrollContainer.scrollTop = oldScrollTop;
-      }
-    }
-  }
-  
-  let hasSentLoaded = false;
-  let currentMessages = []; // храним текущие сообщения для повторного использования
-  
-  // Обработчик сообщений от родительского окна (игры)
-  window.addEventListener('message', function(event) {
-    const receivedData = event.data;
-    let messagesArray = null;
-    let isValidArray = false;
-    
-    // Определяем массив
-    if (Array.isArray(receivedData)) {
-      messagesArray = receivedData;
-      isValidArray = true;
-    } 
-    else if (typeof receivedData === 'string') {
-      try {
-        const parsed = JSON.parse(receivedData);
-        if (Array.isArray(parsed)) {
-          messagesArray = parsed;
-          isValidArray = true;
-        } else if (parsed && typeof parsed === 'object') {
-          if (Array.isArray(parsed.messages)) {
-            messagesArray = parsed.messages;
-            isValidArray = true;
-          } else if (Array.isArray(parsed.data)) {
-            messagesArray = parsed.data;
-            isValidArray = true;
-          }
-        }
-      } catch(e) {
-        // не JSON — возможно, просто строка, игнорируем
-      }
-    }
-    else if (receivedData && typeof receivedData === 'object') {
-      if (Array.isArray(receivedData.messages)) {
-        messagesArray = receivedData.messages;
-        isValidArray = true;
-      } else if (Array.isArray(receivedData.data)) {
-        messagesArray = receivedData.data;
-        isValidArray = true;
+      // Если пользователь не листал вверх (или был внизу) - скроллим вниз
+      if (!userScrolledUp) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
       }
     }
     
-    if (isValidArray && messagesArray !== null) {
-      // Отправляем ответ " loaded " (как в задании)
-      window.parent.postMessage(' loaded ', '*');
-      hasSentLoaded = true;
+    // Отслеживаем скролл пользователя (чтобы не дёргать вниз)
+    function onScrollHandler() {
+      if (!scrollContainer) return;
+      const isBottom = isScrolledToBottom();
+      // Если пользователь прокрутил выше (not bottom) — запоминаем, что он ушёл вверх
+      if (!isBottom) {
+        userScrolledUp = true;
+      } else {
+        // Если внизу — сбрасываем флаг, чтобы новые сообщения листали вниз
+        userScrolledUp = false;
+      }
+    }
+    
+    // Рендер сообщений
+    function renderMessages(messagesArray, isFirstRender = false) {
+      if (!scrollContainer) return;
       
-      // Сохраняем и обновляем сообщения
-      currentMessages = messagesArray;
-      renderMessages(messagesArray);
+      // Запоминаем, был ли пользователь внизу ДО обновления (чтобы после рендера сохранить поведение)
+      const wasAtBottom = !userScrolledUp && isScrolledToBottom();
+      
+      // Очищаем контейнер
+      while (scrollContainer.firstChild) {
+        scrollContainer.removeChild(scrollContainer.firstChild);
+      }
+      
+      // Если нет сообщений
+      if (!messagesArray || messagesArray.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'empty-chat';
+        emptyDiv.textContent = 'Сообщения пока не загружены';
+        scrollContainer.appendChild(emptyDiv);
+        // если пусто, то скролл не нужен
+        return;
+      }
+      
+      // Проходим по массиву (порядок как пришёл: старые -> новые)
+      for (let i = 0; i < messagesArray.length; i++) {
+        const msg = messagesArray[i];
+        if (!msg || typeof msg !== 'object') continue;
+        
+        const name = msg.name || 'Аноним';
+        let text = msg.text || '';
+        // Делаем переносы, но без изменения стилей
+        const icon = msg.icon || 'GameIcon4';
+        const timestamp = msg.timestamp ? Number(msg.timestamp) : null;
+        
+        let timeFormatted = 'только что';
+        if (timestamp && !isNaN(timestamp)) {
+          timeFormatted = formatTimeAgo(timestamp);
+        } else {
+          timeFormatted = 'недавно';
+        }
+        
+        const safeName = escapeHtml(name);
+        const safeText = escapeHtml(text);
+        const iconUrl = getIconUrl(icon);
+        
+        const row = document.createElement('div');
+        row.className = 'row';
+        
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'avatar';
+        const img = document.createElement('img');
+        img.src = iconUrl;
+        img.onerror = function() {
+          if (this.src !== iconUrl) return;
+          this.src = "https://raw.githubusercontent.com/bahrstars/bahrstars.github.io/7078079fb0d951a18723045bb6c0d55c0ccf538c/GameFiles/Images/Icons/GameIcon4.svg";
+        };
+        avatarDiv.appendChild(img);
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message';
+        
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'name';
+        nameDiv.textContent = safeName;
+        
+        const textDiv = document.createElement('div');
+        textDiv.className = 'text';
+        textDiv.textContent = safeText;
+        
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'time';
+        timeDiv.textContent = timeFormatted;
+        
+        messageDiv.appendChild(nameDiv);
+        messageDiv.appendChild(textDiv);
+        messageDiv.appendChild(timeDiv);
+        
+        row.appendChild(avatarDiv);
+        row.appendChild(messageDiv);
+        
+        scrollContainer.appendChild(row);
+      }
+      
+      // После рендера: решаем, скроллить или нет
+      if (isFirstRender) {
+        // При первом рендере всегда вниз
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        userScrolledUp = false;
+      } else {
+        // Если до обновления пользователь был внизу (или флаг сброшен) — скроллим вниз
+        if (wasAtBottom || !userScrolledUp) {
+          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+          userScrolledUp = false;
+        }
+        // Иначе оставляем пользователя на его текущей позиции (скролл не трогаем)
+        // Важно: scrollTop не меняем, сохраняя позицию
+      }
     }
-  });
-  
-  // Инициализация при загрузке
-  window.addEventListener('DOMContentLoaded', function() {
-    window.parent.postMessage(' loaded ', '*');
-    hasSentLoaded = true;
-    renderMessages([]);
-  });
-  
-  // Слушаем завершение загрузки изображений, чтобы скорректировать скролл (чтобы не было скачков)
-  // Используем MutationObserver для отслеживания добавления картинок
-  const observer = new MutationObserver(function(mutations) {
-    let needScrollCheck = false;
-    mutations.forEach(function(mutation) {
-      if (mutation.type === 'childList' && mutation.addedNodes.length) {
-        mutation.addedNodes.forEach(function(node) {
-          if (node.nodeName === 'IMG' || (node.querySelector && node.querySelector('img'))) {
-            needScrollCheck = true;
+    
+    // Принудительная установка слушателя скролла для свободы листания
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', onScrollHandler);
+    }
+    
+    let hasSentLoaded = false;
+    let currentMessageArray = null; // храним текущий массив для обновлений
+    
+    // Обработчик сообщений от родительского окна (игры)
+    window.addEventListener('message', function(event) {
+      const receivedData = event.data;
+      let messagesArray = null;
+      let isValidArray = false;
+      
+      // Определяем массив (поддержка разных форматов)
+      if (Array.isArray(receivedData)) {
+        messagesArray = receivedData;
+        isValidArray = true;
+      } 
+      else if (typeof receivedData === 'string') {
+        try {
+          const parsed = JSON.parse(receivedData);
+          if (Array.isArray(parsed)) {
+            messagesArray = parsed;
+            isValidArray = true;
+          } else if (parsed && typeof parsed === 'object') {
+            if (Array.isArray(parsed.messages)) {
+              messagesArray = parsed.messages;
+              isValidArray = true;
+            } else if (Array.isArray(parsed.data)) {
+              messagesArray = parsed.data;
+              isValidArray = true;
+            }
           }
-        });
+        } catch(e) {
+          // не JSON — возможно просто строка-команда
+        }
+      }
+      else if (receivedData && typeof receivedData === 'object') {
+        if (Array.isArray(receivedData.messages)) {
+          messagesArray = receivedData.messages;
+          isValidArray = true;
+        } else if (Array.isArray(receivedData.data)) {
+          messagesArray = receivedData.data;
+          isValidArray = true;
+        }
+      }
+      
+      if (isValidArray && messagesArray !== null) {
+        // Сохраняем текущий массив
+        currentMessageArray = messagesArray;
+        
+        // Отправляем ответ " loaded " (как в задании, с пробелами)
+        window.parent.postMessage(' loaded ', '*');
+        hasSentLoaded = true;
+        
+        // Определяем, первый ли это рендер или обновление
+        const isFirst = (!initialRenderDone);
+        // Рендерим сообщения, передавая флаг первого рендера
+        renderMessages(messagesArray, isFirst);
+        initialRenderDone = true;
       }
     });
-    if (needScrollCheck && !userScrolling) {
-      // Небольшая задержка для загрузки картинок
-      setTimeout(() => {
-        if (!userScrolling) {
-          const isAtBottom = (scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight) < 50;
-          if (isAtBottom) {
-            scrollContainer.scrollTop = scrollContainer.scrollHeight;
-          }
-        }
-      }, 100);
-    }
-  });
-  
-  observer.observe(scrollContainer, { childList: true, subtree: true });
+    
+    // Инициализация при загрузке: отправляем " loaded " и показываем пустой чат
+    window.addEventListener('DOMContentLoaded', function() {
+      window.parent.postMessage(' loaded ', '*');
+      hasSentLoaded = true;
+      initialRenderDone = false;
+      renderMessages([], true);   // пустой чат, без агрессивного скролла
+      // Сбрасываем флаг пользователя
+      userScrolledUp = false;
+    });
+    
+    // Дополнительная защита: если вдруг изображения долго грузятся и меняют высоту,
+    // не мешаем пользователю листать — не трогаем скролл принудительно.
+    // Также можно добавить наблюдение за изменениями содержимого, но без самовольного скролла
+    
+    // Чтобы сообщения занимали максимальную ширину, но пузырь не вылезал за разумные пределы,
+    // в CSS уже задано: .message { max-width: 100%; flex: 1; } 
+    // и .row занимает ширину родителя.
+    // Теперь сообщения выглядят шире и адаптивнее.
+    
+    // Экспортируем для отладки (не влияет на работу)
+    window.__chatDebug = { scrollContainer, userScrolledUp };
+  })();
 </script>
 </body>
 </html>
